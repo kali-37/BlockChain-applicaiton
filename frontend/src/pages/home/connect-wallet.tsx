@@ -8,10 +8,10 @@ import { PiCirclesFourFill } from "react-icons/pi";
 interface ConnectWalletProps {
     handleWallet: () => void;
 }
-
+// top-[50%] left-[50%] -translate-x-1/2 absolute z-[100]
 function ConnectWallet({ handleWallet }: ConnectWalletProps) {
     return (
-        <div className="absolute border w-[300px] z-[100] top-[50%] left-[50%] -translate-x-1/2 bg-black p-6 rounded-3xl">
+        <div className=" border-[1px] border-gray-700 w-[300px] bg-black p-6 rounded-3xl">
             <div className="flex items-center justify-between">
                 <FaRegQuestionCircle className="cursor-pointer" />
                 <p className="font-bold">ConnectWallet</p>
@@ -31,7 +31,7 @@ function ConnectWallet({ handleWallet }: ConnectWalletProps) {
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center  bg-[#FDEBD1]">
                         <GiFoxHead className="text-3xl text-[#F5841D]" />
                     </div>
-                    <p>WalletConnect</p>
+                    <p>Metal Mask</p>
                 </div>
                 <div className="flex bg-gray-900 items-center gap-4 rounded-xl p-3 hover:bg-gray-800 cursor-pointer ">
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center  bg-blue-500">
