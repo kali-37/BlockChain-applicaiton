@@ -15,10 +15,10 @@ function TeamMembers() {
                 </div>
             </div>
             <div className="grid grid-cols-2 space-x-4">
-                <button className="border-2 py-4 rounded-xl border-gray-500 hover:bg-gray-600">
+                <button className="border-2 py-4 rounded-xl border-blue-500 hover:bg-blue-900">
                     View Geneology
                 </button>
-                <button className="border-2 py-4 rounded-xl border-gray-500 hover:bg-gray-600">
+                <button className="border-2 py-4 rounded-xl border-blue-500 hover:bg-blue-900">
                     View Earnings
                 </button>
             </div>

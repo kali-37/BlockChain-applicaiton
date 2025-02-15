@@ -28,18 +28,20 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
             <aside className="bg-gray-800 h-full p-8 flex flex-col gap-8">
                 <div>
                     <IoCloseSharp
-                        className="text-3xl cursor-pointer text-green-500"
+                        className="text-3xl cursor-pointer text-blue-500"
                         onClick={handleDrawer}
                     />
                 </div>
                 <div className=" flex flex-col gap-4">
-                    <p className="border-b-2 inline">Main Menu</p>
+                    <p className="border-b-2 border-blue-400 inline">
+                        Main Menu
+                    </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 bg-green-800 p-2 cursor-pointer hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 bg-blue-800 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
                             <RxDashboard />
                             <p>Dashboard</p>
                         </div>
-                        <div className="flex items-center gap-2 cursor-pointer  p-2 hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md">
                             <RiVipCrownLine />
                             <p>Ranking Status</p>
                         </div>
@@ -47,13 +49,15 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                 </div>
                 {/* ============================================================== */}
                 <div className=" flex flex-col gap-4">
-                    <p className="border-b-2 inline">Financial</p>
+                    <p className="border-b-2 border-blue-400 inline">
+                        Financial
+                    </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
                             <FaGift />
                             <p>Earnings Overview</p>
                         </div>
-                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-blue-800 rounded-md">
                             <MdHistory />
                             <p>Transaction History</p>
                         </div>
@@ -61,13 +65,15 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                 </div>
                 {/* ============================================================== */}
                 <div className=" flex flex-col gap-4">
-                    <p className="border-b-2 inline">Networks</p>
+                    <p className="border-b-2 border-blue-400 inline">
+                        Networks
+                    </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
                             <VscReferences />
                             <p>Referral</p>
                         </div>
-                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-blue-800 rounded-md">
                             <PiTreeStructureFill />
                             <p>Genealogy</p>
                         </div>
@@ -75,13 +81,15 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                 </div>
                 {/* ============================================================== */}
                 <div className=" flex flex-col gap-4">
-                    <p className="border-b-2 inline">Settings</p>
+                    <p className="border-b-2 border-blue-400 inline">
+                        Settings
+                    </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
                             <BsPersonCircle />
                             <p>Profile</p>
                         </div>
-                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-green-800 rounded-md">
+                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-blue-800 rounded-md">
                             <BsPerson />
                             <p>FAQ</p>
                         </div>

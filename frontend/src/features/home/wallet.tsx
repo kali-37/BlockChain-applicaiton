@@ -16,7 +16,7 @@ function Wallet() {
                     <div className=" flex flex-col -rotate-90 z-40 absolute top-[20%] md:top-[2%] left-[-8%] md:left-[-4%] min-w-[80%] md:min-w-[70%]">
                         <div className="flex items-center gap-2">
                             <div className="w-[17%] border-t-2"></div>
-                            <p className="text-green-600">
+                            <p className="text-blue-600">
                                 WELCOME TO ANT ALLIANCE
                             </p>
                         </div>
@@ -32,14 +32,14 @@ function Wallet() {
                     <div className=" z-30 absolute bottom-[10%] md:bottom-[-10%] w-[80%] left-[50%] -translate-x-1/2 grid grid-cols-1 space-y-4">
                         <div
                             onClick={handleWallet}
-                            className="bg-[#00794F] cursor-pointer py-4 rounded-lg flex items-center justify-center gap-3 "
+                            className="bg-blue-700 hover:bg-blue-900 cursor-pointer py-4 rounded-lg flex items-center justify-center gap-3 "
                         >
                             <span>
                                 <FaWallet className="text-xl" />
                             </span>
                             <button className="text-xl">Link Wallet</button>
                         </div>
-                        <p className="text-2xl text-center">
+                        <p className="text-2xl text-center text-blue-500">
                             Begin by linking wallet
                         </p>
                     </div>

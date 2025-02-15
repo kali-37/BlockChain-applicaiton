@@ -16,17 +16,17 @@ function Header() {
                         ANT ALLIANCE
                     </h1>
                     <div className="flex items-center gap-4  ">
-                        <div className="border-2 rounded-lg border-green-600 border-opacity-0 hover:border-opacity-100">
-                            <div className="flex items-center px-2 py-1 border-[1px] border-green-600 gap-3 rounded-lg cursor-pointer hover:  ">
+                        <div className="border-2 rounded-lg border-blue-600 border-opacity-0 hover:border-opacity-100">
+                            <div className="flex items-center px-2 py-1 border-[1px] border-blue-600 gap-3 rounded-lg cursor-pointer hover:  ">
                                 <FaWallet />
                                 <p>Connect</p>
                             </div>
                         </div>
                         <div
-                            className="border-2 rounded-xl border-green-600 border-opacity-0 hover:border-opacity-100"
+                            className="border-2 rounded-xl border-blue-600 border-opacity-0 hover:border-opacity-100"
                             onClick={handleLanguageModal}
                         >
-                            <div className="border-[1px] border-green-600 p-[5px] rounded-xl cursor-pointer">
+                            <div className="border-[1px] border-blue-600 p-[5px] rounded-xl cursor-pointer">
                                 <img
                                     src="https://ant-seiko.com/icon/country/en.svg"
                                     alt=""
