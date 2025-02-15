@@ -9,6 +9,8 @@ import { PiTreeStructureFill } from "react-icons/pi";
 import { VscReferences } from "react-icons/vsc";
 import { FaGift } from "react-icons/fa6";
 import { MdHistory } from "react-icons/md";
+import { useLocation } from "react-router";
+import { Link } from "react-router";
 
 interface UserDrawerProps {
     open: boolean;
@@ -16,6 +18,8 @@ interface UserDrawerProps {
 }
 
 function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
+    const { pathname } = useLocation();
+    console.log(location);
     return (
         <Drawer
             open={open}
@@ -37,14 +41,28 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         Main Menu
                     </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 bg-blue-800 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
+                        <Link
+                            to={`/user/dashboard`}
+                            className={`flex items-center gap-2 ${
+                                pathname === "/user/dashboard"
+                                    ? "bg-blue-800"
+                                    : ""
+                            } p-2 cursor-pointer hover:bg-blue-800 rounded-md`}
+                        >
                             <RxDashboard />
                             <p>Dashboard</p>
-                        </div>
-                        <div className="flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md">
+                        </Link>
+                        <Link
+                            to={`/user/rank-status`}
+                            className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
+                                pathname === "/user/rank-status"
+                                    ? "bg-blue-800"
+                                    : ""
+                            }`}
+                        >
                             <RiVipCrownLine />
                             <p>Ranking Status</p>
-                        </div>
+                        </Link>
                     </div>
                 </div>
                 {/* ============================================================== */}
@@ -53,14 +71,28 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         Financial
                     </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
+                        <Link
+                            to={`/user/earning-overview`}
+                            className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
+                                pathname === "/user/earning-overview"
+                                    ? "bg-blue-800"
+                                    : ""
+                            }`}
+                        >
                             <FaGift />
                             <p>Earnings Overview</p>
-                        </div>
-                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-blue-800 rounded-md">
+                        </Link>
+                        <Link
+                            to={`/user/transaction-history`}
+                            className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
+                                pathname === "/user/transaction-history"
+                                    ? "bg-blue-800"
+                                    : ""
+                            }`}
+                        >
                             <MdHistory />
                             <p>Transaction History</p>
-                        </div>
+                        </Link>
                     </div>
                 </div>
                 {/* ============================================================== */}
@@ -69,14 +101,28 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         Networks
                     </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
+                        <Link
+                            to={`/user/referal`}
+                            className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
+                                pathname === "/user/referal"
+                                    ? "bg-blue-800"
+                                    : ""
+                            }`}
+                        >
                             <VscReferences />
                             <p>Referral</p>
-                        </div>
-                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-blue-800 rounded-md">
+                        </Link>
+                        <Link
+                            to={`/user/genealogy`}
+                            className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
+                                pathname === "/user/genealogy"
+                                    ? "bg-blue-800"
+                                    : ""
+                            }`}
+                        >
                             <PiTreeStructureFill />
                             <p>Genealogy</p>
-                        </div>
+                        </Link>
                     </div>
                 </div>
                 {/* ============================================================== */}
@@ -85,14 +131,26 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         Settings
                     </p>
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-blue-800 rounded-md">
+                        <Link
+                            to={`/user/profile`}
+                            className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
+                                pathname === "/user/profile"
+                                    ? "bg-blue-800"
+                                    : ""
+                            }`}
+                        >
                             <BsPersonCircle />
                             <p>Profile</p>
-                        </div>
-                        <div className="flex items-center gap-2 cursor-pointer p-2 hover:bg-blue-800 rounded-md">
+                        </Link>
+                        <Link
+                            to={`/user/faq`}
+                            className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
+                                pathname === "/user/faq" ? "bg-blue-800" : ""
+                            }`}
+                        >
                             <BsPerson />
                             <p>FAQ</p>
-                        </div>
+                        </Link>
                     </div>
                 </div>
                 {/* ============================================================== */}
