@@ -1,11 +1,9 @@
-import Header from "./pages/home/header";
-import Wallet from "./pages/home/wallet";
+import Router from "./router/router";
 
 function App() {
     return (
         <>
-            <Header />
-            <Wallet />
+            <Router />
         </>
     );
 }

@@ -1,5 +1,5 @@
 import { FaWallet } from "react-icons/fa6";
-import ConnectWallet from "./connect-wallet";
+import ConnectWallet from "../../features/home/connect-wallet";
 import Modal from "../../components/ui/modal";
 import { useState } from "react";
 
