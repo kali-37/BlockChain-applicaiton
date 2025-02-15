@@ -7,7 +7,7 @@ function UserLayout({ children }: UserLayoutProp) {
     return (
         <>
             <UserHeader />
-            <div className="w-[80%] max-w-[900px] py-4 space-y-8 mx-auto">
+            <div className="w-[80%] max-w-[900px] py-4 space-y-10 mx-auto">
                 {children}
             </div>
         </>

@@ -2,7 +2,7 @@ import ant from "../../../assets/img/ant.png";
 
 function TotalAssets() {
     return (
-        <div className="flex justify-between items-center p-6 bg-opacity-70 bg-blue-800 rounded-xl relative">
+        <div className="flex justify-between items-center p-6 bg-opacity-70  rounded-xl relative bg-gradient-to-r shadow-md shadow-gray-800 from-blue-800/70 to-blue-800/10 ">
             <div>
                 <p className="text-sm">Total Assets Balance</p>
                 <div className="flex gap-2 items-center">
@@ -10,8 +10,8 @@ function TotalAssets() {
                     <span className="text-sm text-blue-300">USDT</span>
                 </div>
             </div>
-            <div className="h-[150px] w-[150px] absolute right-0">
-                <img src={ant} alt="" className="h-full w-full" />
+            <div className="h-[100px] w-[100px] absolute right-0 p-2">
+                <img src={ant} alt="" className="h-full w-full " />
             </div>
         </div>
     );
