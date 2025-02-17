@@ -22,7 +22,7 @@ function UserHeader() {
                             <CgMenuLeft className="text-xl md:text-3xl text-blue-400" />
                         </div>
                         <h1 className="font-semibold text-xl md:text-2xl">
-                            ANT ALLIANCE
+                            XCLERA
                         </h1>
                     </div>
                     <div className="flex items-center gap-2">
