@@ -31,7 +31,7 @@ function ConnectWallet({ handleWallet }: ConnectWalletProps) {
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center  bg-[#FDEBD1]">
                         <GiFoxHead className="text-3xl text-[#F5841D]" />
                     </div>
-                    <p>Metal Mask</p>
+                    <p>Meta Mask</p>
                 </div>
                 <div className="flex bg-gray-900 items-center gap-4 rounded-xl p-3 hover:bg-gray-800 cursor-pointer ">
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center  bg-blue-500">

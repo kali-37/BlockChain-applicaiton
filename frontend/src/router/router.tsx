@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import Home from "../pages/home/home";
 import userRoutes from "./routes/user";
 import UserLayout from "../layout/user-layout";
+import HomePage from "../test/home";
 
 function Router() {
     return (
@@ -20,6 +21,7 @@ function Router() {
                             }
                         />
                     ))}
+                    <Route path="/test" element={<HomePage />} />
                 </Routes>
             </BrowserRouter>
         </>
