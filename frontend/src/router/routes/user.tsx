@@ -1,11 +1,15 @@
-import Dashboard from "../../pages/user/dashboard";
-import EarningOverview from "../../pages/user/earningOverview";
-import Faq from "../../pages/user/FAQ";
-import Genealogy from "../../pages/user/genealogy";
-import UserProfile from "../../pages/user/profile";
-import RankingStatus from "../../pages/user/rankingStatus";
-import Referal from "../../pages/user/referal";
-import TransactionHistory from "../../pages/user/transactionHistory";
+import { lazy } from "react";
+
+const Dashboard = lazy(() => import("../../pages/user/dashboard"));
+const EarningOverview = lazy(() => import("../../pages/user/earningOverview"));
+const Faq = lazy(() => import("../../pages/user/FAQ"));
+const Genealogy = lazy(() => import("../../pages/user/genealogy"));
+const UserProfile = lazy(() => import("../../pages/user/profile"));
+const RankingStatus = lazy(() => import("../../pages/user/rankingStatus"));
+const Referal = lazy(() => import("../../pages/user/referal"));
+const TransactionHistory = lazy(
+    () => import("../../pages/user/transactionHistory")
+);
 
 interface IUserRoute {
     id: number;
@@ -35,27 +39,25 @@ const userRoutes: IUserRoute[] = [
         component: TransactionHistory,
     },
     {
-        id : 5 ,
-        path : "/user/referal" ,
-        component : Referal
+        id: 5,
+        path: "/user/referal",
+        component: Referal,
     },
     {
-        id : 6 , 
-        path : "/user/genealogy",
-        component : Genealogy
-    }
-    ,
+        id: 6,
+        path: "/user/genealogy",
+        component: Genealogy,
+    },
     {
-        id : 7 ,
-        path : "/user/profile" ,
-        component : UserProfile
-    }
-    ,
+        id: 7,
+        path: "/user/profile",
+        component: UserProfile,
+    },
     {
-        id : 8 ,
-        path : "/user/faq" ,
-        component : Faq
-    }
+        id: 8,
+        path: "/user/faq",
+        component: Faq,
+    },
 ];
 
 export default userRoutes;

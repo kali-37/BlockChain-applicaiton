@@ -1,5 +1,15 @@
+
+
+
+
 function EarningOverview() {
-    return <div>EarningOverview</div>;
+    return (
+        <>
+            <div>
+                <p>Prakash</p>
+            </div>
+        </>
+    );
 }
 
 export default EarningOverview;

@@ -21,7 +21,7 @@ function UserHeader() {
                         >
                             <CgMenuLeft className="text-xl md:text-3xl text-blue-400" />
                         </div>
-                        <h1 className="font-semibold text-xl md:text-2xl">
+                        <h1 className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-200 via-blue-500 to-blue-800 text-transparent bg-clip-text">
                             XCELRA
                         </h1>
                     </div>
