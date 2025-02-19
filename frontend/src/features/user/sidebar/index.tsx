@@ -19,7 +19,7 @@ interface UserDrawerProps {
 
 function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
     const { pathname } = useLocation();
-    console.log(location);
+    // console.log(location);
     return (
         <Drawer
             open={open}
@@ -43,6 +43,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                     <div className="space-y-2">
                         <Link
                             to={`/user/dashboard`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 ${
                                 pathname === "/user/dashboard"
                                     ? "bg-blue-800"
@@ -54,6 +55,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         </Link>
                         <Link
                             to={`/user/rank-status`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
                                 pathname === "/user/rank-status"
                                     ? "bg-blue-800"
@@ -73,6 +75,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                     <div className="space-y-2">
                         <Link
                             to={`/user/earning-overview`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
                                 pathname === "/user/earning-overview"
                                     ? "bg-blue-800"
@@ -84,6 +87,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         </Link>
                         <Link
                             to={`/user/transaction-history`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
                                 pathname === "/user/transaction-history"
                                     ? "bg-blue-800"
@@ -103,6 +107,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                     <div className="space-y-2">
                         <Link
                             to={`/user/referal`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
                                 pathname === "/user/referal"
                                     ? "bg-blue-800"
@@ -114,6 +119,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         </Link>
                         <Link
                             to={`/user/genealogy`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
                                 pathname === "/user/genealogy"
                                     ? "bg-blue-800"
@@ -133,6 +139,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                     <div className="space-y-2">
                         <Link
                             to={`/user/profile`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
                                 pathname === "/user/profile"
                                     ? "bg-blue-800"
@@ -144,6 +151,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                         </Link>
                         <Link
                             to={`/user/faq`}
+                            onClick={handleDrawer}
                             className={`flex items-center gap-2 cursor-pointer  p-2 hover:bg-blue-800 rounded-md ${
                                 pathname === "/user/faq" ? "bg-blue-800" : ""
                             }`}

@@ -7,3 +7,9 @@
     margin: 0;
     box-sizing: border-box;
 } */
+
+@layer components {
+    .bg-container {
+        @apply bg-blue-900 rounded-xl p-6 shadow-md shadow-gray-500/50;
+    }
+}

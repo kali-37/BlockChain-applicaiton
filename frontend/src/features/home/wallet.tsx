@@ -14,14 +14,14 @@ function Wallet() {
     };
     return (
         <>
-           
             <section className="bg-black p-8  min-h-[80vh] flex items-center justify-center overflow-x-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-2 space-y-8 md:space-y-0 md:space-x-20 w-[80%] max-w-[1000px] mx-auto ">
                     <div className=" flex justify-center items-center relative ">
                         <img
                             src={coin}
-                            className="absolute h-28 w-h-28 top-0 right-[-20%] md:right-[-10%] "
+                            className={`absolute h-28 w-h-28 top-0 right-[-20%] md:right-[-10%]`}
                             alt=""
+                            //
                         />
                         <img
                             src={coin}
@@ -31,7 +31,7 @@ function Wallet() {
                         <img
                             src={ant}
                             alt=""
-                            className="h-200px md:h-[400px] w-200px md:w-[400px] object-contain z-10 "
+                            className="h-200px md:h-[350px] w-200px md:w-[350px] object-contain z-10  "
                         />
                         <img
                             src={coin}
@@ -44,7 +44,7 @@ function Wallet() {
                             alt=""
                         />
                     </div>
-                    <div className=" flex flex-col items-center justify-center gap-7 p-8">
+                    <div className=" flex flex-col items-center bg-no-repeat bg-center justify-center gap-7 p-8">
                         <h2 className=" text-2xl md:text-4xl  text-center">
                             Welcome to{" "}
                             <span className="bg-gradient-to-r from-blue-200 via-blue-500 to-blue-800 text-transparent bg-clip-text font-bold">
@@ -70,7 +70,7 @@ function Wallet() {
                 {openWallet && (
                     <Modal handleWallet={handleWallet}>
                         {/* <ConnectWallet handleWallet={handleWallet} /> */}
-                        <WalletConnect  onClose={() => setOpenWallet(false)}/>
+                        <WalletConnect onClose={() => setOpenWallet(false)} />
                     </Modal>
                 )}
             </section>

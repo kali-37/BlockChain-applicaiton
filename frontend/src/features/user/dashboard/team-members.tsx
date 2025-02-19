@@ -1,3 +1,5 @@
+import { Link } from "react-router";
+
 function TeamMembers() {
     return (
         <div className="flex flex-col gap-4">
@@ -15,12 +17,18 @@ function TeamMembers() {
                 </div>
             </div>
             <div className="grid grid-cols-2 space-x-4">
-                <button className="border-2 py-4 rounded-xl border-blue-500 hover:bg-blue-900">
+                <Link
+                    to={`/user/genealogy`}
+                    className="border-2 py-4 rounded-xl text-center border-blue-500 hover:bg-blue-900"
+                >
                     View Geneology
-                </button>
-                <button className="border-2 py-4 rounded-xl border-blue-500 hover:bg-blue-900">
+                </Link>
+                <Link
+                    to={`/user/earning-overview`}
+                    className="border-2 py-4 rounded-xl text-center border-blue-500 hover:bg-blue-900"
+                >
                     View Earnings
-                </button>
+                </Link>
             </div>
         </div>
     );

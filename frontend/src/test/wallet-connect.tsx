@@ -2,9 +2,16 @@ import React, { useState, useEffect } from "react";
 import { GiFoxHead } from "react-icons/gi";
 import { useNavigate } from "react-router-dom";
 import Web3 from "web3";
+import { MetaMaskProvider } from "web3";
 
 interface WalletConnectProps {
     onClose: () => void;
+}
+
+declare global {
+    interface Window {
+        // ethereum?: MetaMaskProvider;
+    }
 }
 
 const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
@@ -22,14 +29,22 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
             if (!window?.ethereum) {
                 throw new Error("Please install MetaMask!");
             }
+            console.log("ethererum ==> ", window?.ethereum);
 
             const web3 = new Web3(window?.ethereum);
+            console.log("web3 ==> ", web3);
 
             // Request account access
+            console.log(
+                await window?.ethereum.request({
+                    method: "eth_requestAccounts",
+                })
+            );
             await window?.ethereum.request({ method: "eth_requestAccounts" });
 
             // Get connected account
             const accounts = await web3.eth.getAccounts();
+            console.log("accounts ==> ", accounts);
             const connectedAccount = accounts[0];
 
             setAccount(connectedAccount);

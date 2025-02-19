@@ -5,8 +5,10 @@ export default {
         extend: {
             backgroundImage: {
                 ant: "url('./src/assets/img/ant.png')",
+                ant2: "url('./src/assets/img/ant-1.png')",
                 coin: "url('./src/assets/img/coin.png')",
             },
+            backgroundColor: {},
         },
     },
     plugins: [],
