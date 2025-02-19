@@ -8,6 +8,18 @@
     box-sizing: border-box;
 } */
 
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 @layer components {
     .bg-container {
         @apply bg-blue-900 rounded-xl p-6 shadow-md shadow-gray-500/50;

@@ -1,5 +1,12 @@
+import ProfileData from "./profile-data";
+
 function UserProfile() {
-    return <div>UserProfile</div>;
+    return (
+        <>
+            <p className="text-xl font-semibold text-center">User profile</p>
+            <ProfileData />
+        </>
+    );
 }
 
 export default UserProfile;

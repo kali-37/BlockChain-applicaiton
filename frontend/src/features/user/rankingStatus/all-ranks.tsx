@@ -1,6 +1,8 @@
 import { dummyData } from "../../../data/allRankDummyData";
 import ant from "../../../assets/img/ant.png";
 import { MdDone } from "react-icons/md";
+import { Link } from "react-router";
+
 function AllRanks() {
     return (
         <>
@@ -44,9 +46,12 @@ function AllRanks() {
                 </p>
             </div>
             <div className="flex  ">
-                <button className="bg-container m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950">
+                <Link
+                    to={`/user/profile`}
+                    className="bg-container text-center m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950"
+                >
                     Complete Profile Setup
-                </button>
+                </Link>
             </div>
         </>
     );

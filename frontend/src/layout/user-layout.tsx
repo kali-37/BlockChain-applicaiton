@@ -1,4 +1,4 @@
-import UserHeader from "../components/header/user-header";
+import UserHeader from "../components/user/user-header";
 
 interface UserLayoutProp {
     children: React.ReactNode;
