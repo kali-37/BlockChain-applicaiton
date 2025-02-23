@@ -24,4 +24,10 @@ input[type="number"] {
     .bg-container {
         @apply bg-blue-900 rounded-xl p-6 shadow-md shadow-gray-500/50;
     }
+    .gen-line {
+        @apply relative after:absolute after:w-6 after:border after:bottom-0 after:left-[50%] after:-translate-x-1/2 pb-1 after:border-blue-700 text-blue-500;
+    }
+    .blue-gradient {
+        @apply from-blue-800/70 to-blue-800/10;
+    }
 }
