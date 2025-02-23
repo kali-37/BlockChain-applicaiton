@@ -10,6 +10,9 @@ const Referal = lazy(() => import("../../pages/user/referal"));
 const TransactionHistory = lazy(
     () => import("../../pages/user/transactionHistory")
 );
+const MakePayment = lazy(
+    () => import("../../pages/user/rankingStatus/makePayment")
+);
 
 interface IUserRoute {
     id: number;
@@ -57,6 +60,11 @@ const userRoutes: IUserRoute[] = [
         id: 8,
         path: "/user/faq",
         component: Faq,
+    },
+    {
+        id: 9,
+        path: "/user/make-payment",
+        component: MakePayment,
     },
 ];
 

@@ -45,7 +45,13 @@ function AllRanks() {
                     Upgrade Cost : 120 USDT
                 </p>
             </div>
-            <div className="flex  ">
+            <div className="flex flex-col gap-8 ">
+                <Link
+                    to={`/user/make-payment`}
+                    className="bg-container text-center m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950"
+                >
+                    Upgrade
+                </Link>
                 <Link
                     to={`/user/profile`}
                     className="bg-container text-center m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950"
