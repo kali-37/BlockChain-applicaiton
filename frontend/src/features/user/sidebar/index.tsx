@@ -9,8 +9,9 @@ import { PiTreeStructureFill } from "react-icons/pi";
 import { VscReferences } from "react-icons/vsc";
 import { FaGift } from "react-icons/fa6";
 import { MdHistory } from "react-icons/md";
-import { useLocation } from "react-router";
+import { replace, useLocation, useNavigate } from "react-router";
 import { Link } from "react-router";
+import { MdLogout } from "react-icons/md";
 
 interface UserDrawerProps {
     open: boolean;
@@ -19,7 +20,13 @@ interface UserDrawerProps {
 
 function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
     const { pathname } = useLocation();
+    const navigate = useNavigate();
     // console.log(location);
+
+    const handleLogOut = () => {
+        localStorage.removeItem("walletAddress");
+        navigate("/");
+    };
     return (
         <Drawer
             open={open}
@@ -29,7 +36,7 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
             // overlayColor={"green"}
             overlayClassName="bg-red-400"
         >
-            <aside className="bg-gray-800 h-full p-8 flex flex-col gap-8">
+            <aside className="bg-gray-800 h-full p-8 flex flex-col gap-8 overflow-y-auto">
                 <div>
                     <IoCloseSharp
                         className="text-3xl cursor-pointer text-blue-500"
@@ -162,6 +169,12 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
                     </div>
                 </div>
                 {/* ============================================================== */}
+                <div className="cursor-pointer flex items-center gap-1">
+                    <MdLogout className="text-xl font-semibold" />
+                    <button className="font-semibold" onClick={handleLogOut}>
+                        Log Out
+                    </button>
+                </div>
             </aside>
         </Drawer>
     );
