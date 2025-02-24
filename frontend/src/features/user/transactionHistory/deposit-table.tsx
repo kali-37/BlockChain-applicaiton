@@ -38,14 +38,19 @@ function DepositTable() {
                         </tr>
                     </tbody>
                 ) : (
-                    <div className=" min-h-[400px] flex flex-col gap-4 justify-center items-center ">
-                        <MdOutlineFileCopy className="text-6xl text-gray-600" />
-                        <p className="text-sm text-gray-500">
-                            You do not have any data at the moment :{" "}
-                        </p>
-                    </div>
+                    ""
                 )}
             </table>
+            {data ? (
+                ""
+            ) : (
+                <div className=" min-h-[400px] flex flex-col gap-4 justify-center items-center ">
+                    <MdOutlineFileCopy className="text-6xl text-gray-600" />
+                    <p className="text-sm text-gray-500">
+                        You do not have any data at the moment :{" "}
+                    </p>
+                </div>
+            )}
         </div>
     );
 }

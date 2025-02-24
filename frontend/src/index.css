@@ -20,6 +20,18 @@ input[type="number"] {
     -moz-appearance: textfield;
 }
 
+.bg-pattern {
+    background-color: #181829;
+    /* opacity: 0.6; */
+    background-image: linear-gradient(135deg, #141b99 25%, transparent 25%),
+        linear-gradient(225deg, #141b99 25%, transparent 25%),
+        linear-gradient(45deg, #141b99 25%, transparent 25%),
+        linear-gradient(315deg, #141b99 25%, #181829 25%);
+    background-position: 37px 0, 37px 0, 0 0, 0 0;
+    background-size: 74px 74px;
+    background-repeat: repeat;
+}
+
 @layer components {
     .bg-container {
         @apply bg-blue-900 rounded-xl p-6 shadow-md shadow-gray-500/50;
@@ -29,5 +41,8 @@ input[type="number"] {
     }
     .blue-gradient {
         @apply from-blue-800/70 to-blue-800/10;
+    }
+    .btn {
+        @apply bg-container text-center m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950;
     }
 }
