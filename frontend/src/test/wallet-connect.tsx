@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { GiFoxHead } from "react-icons/gi";
 import { useNavigate } from "react-router-dom";
-import Web3 from "web3";
-import { MetaMaskProvider } from "web3";
+import Web3, { MetaMaskProvider } from "web3";
 
 interface WalletConnectProps {
     onClose: () => void;
@@ -10,7 +9,7 @@ interface WalletConnectProps {
 
 declare global {
     interface Window {
-        // ethereum?: MetaMaskProvider;
+        ethereum?: MetaMaskProvider<unknown>;
     }
 }
 

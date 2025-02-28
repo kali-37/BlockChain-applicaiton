@@ -3,6 +3,7 @@ import { MdOutlineFileCopy } from "react-icons/md";
 
 function GenData() {
     const [data, setData] = useState(false);
+    console.log(setData);
     return (
         <div>
             <table className="w-full flex flex-col gap-2 ">

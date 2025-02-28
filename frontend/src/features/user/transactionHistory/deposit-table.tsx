@@ -4,6 +4,7 @@ import { IoOptionsSharp } from "react-icons/io5";
 
 function DepositTable() {
     const [data, setData] = useState(false);
+    console.log(setData);
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-4">

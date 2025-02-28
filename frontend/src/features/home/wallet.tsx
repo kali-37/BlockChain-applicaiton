@@ -1,5 +1,5 @@
 import { FaWallet } from "react-icons/fa6";
-import ConnectWallet from "../../features/home/connect-wallet";
+// import ConnectWallet from "../../features/home/connect-wallet";
 import Modal from "../../components/ui/modal";
 import ant from "../../assets/img/ant.png";
 import coin from "../../assets/img/coin.png";
