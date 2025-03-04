@@ -1,0 +1,11 @@
+Django==4.2.7
+djangorestframework==3.14.0
+mysqlclient==2.2.7
+web3==6.11.0
+python-dotenv==1.0.1
+dj-database-url==2.3.0
+psycopg2-binary==2.9.10
+gunicorn==23.0.0
+whitenoise==6.9.0
+pytest==8.3.5
+pytest-django==4.10.0
