@@ -1,5 +1,6 @@
 # views.py
 from rest_framework import viewsets, status
+from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth.models import User
@@ -104,7 +105,7 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
 # views.py excerpt for registration
 class RegistrationView(viewsets.ViewSet):
     """API endpoint for registering new users"""
-    
+    permission_classes = [permissions.AllowAny]
     @transaction.atomic
     def create(self, request):
         serializer = RegistrationSerializer(data=request.data)
