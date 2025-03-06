@@ -11,10 +11,12 @@ class BlockchainService:
     def __init__(self):
         # Get contract address and ABI from settings
         try:
-            self.contract_address = settings.CONTRACT_ADDRESS
             self.contract_abi_path = settings.CONTRACT_ABI_PATH
             self.web3_provider_url = settings.WEB3_PROVIDER_URL
             self.chain_id = settings.CHAIN_ID
+
+            # Convert contract address to checksum format
+            self.contract_address = Web3.to_checksum_address(settings.CONTRACT_ADDRESS)
         except AttributeError:
             raise ImproperlyConfigured("Missing blockchain settings in Django settings.py")
         
@@ -52,6 +54,10 @@ class BlockchainService:
         service_fee = 15     # 15 USDT
         total_amount = level_1_price + service_fee
         
+        # Convert wallet addresses to checksum format
+        user_wallet = self.w3.to_checksum_address(user_wallet)
+        referrer_wallet = self.w3.to_checksum_address(referrer_wallet)
+            
         # Build transaction
         transaction = self.contract.functions.register(referrer_wallet).build_transaction({
             'from': user_wallet,
@@ -64,8 +70,8 @@ class BlockchainService:
         
         # Sign and send transaction
         signed_txn = self.w3.eth.account.sign_transaction(transaction, private_key)
-        tx_hash = self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-        
+        tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+    
         # Wait for transaction receipt
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
         
@@ -79,6 +85,10 @@ class BlockchainService:
         """Upgrade user to a new level on the blockchain"""
         # Calculate upgrade fee (150 for level 2, 200 for level 3, etc.)
         upgrade_fee = (new_level * 50) + 50
+
+        # Convert wallet addresses to checksum format
+        user_wallet = self.w3.to_checksum_address(user_wallet)
+        upline_wallet = self.w3.to_checksum_address(upline_wallet)
         
         # Build transaction
         transaction = self.contract.functions.upgradeLevel(
@@ -95,7 +105,7 @@ class BlockchainService:
         
         # Sign and send transaction
         signed_txn = self.w3.eth.account.sign_transaction(transaction, private_key)
-        tx_hash = self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
         
         # Wait for transaction receipt
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)

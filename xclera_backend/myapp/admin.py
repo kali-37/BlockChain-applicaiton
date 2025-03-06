@@ -35,7 +35,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     def get_referrer(self, obj):
         if obj.referrer:
             display_name = obj.referrer.username or f"{obj.referrer.wallet_address[:10]}..."
-            url = reverse('admin:matrix_userprofile_change', args=[obj.referrer.id])
+            url = reverse('admin:myapp_userprofile_change', args=[obj.referrer.id])
             return format_html('<a href="{}">{}</a>', url, display_name)
         return "-"
     get_referrer.short_description = 'Referrer'
@@ -63,14 +63,14 @@ class TransactionAdmin(admin.ModelAdmin):
     
     def get_user(self, obj):
         display_name = obj.user.username or f"{obj.user.wallet_address[:10]}..."
-        url = reverse('admin:matrix_userprofile_change', args=[obj.user.id])
+        url = reverse('admin:myapp_userprofile_change', args=[obj.user.id])
         return format_html('<a href="{}">{}</a>', url, display_name)
     get_user.short_description = 'User'
     
     def get_recipient(self, obj):
         if obj.recipient:
             display_name = obj.recipient.username or f"{obj.recipient.wallet_address[:10]}..."
-            url = reverse('admin:matrix_userprofile_change', args=[obj.recipient.id])
+            url = reverse('admin:myapp_userprofile_change', args=[obj.recipient.id])
             return format_html('<a href="{}">{}</a>', url, display_name)
         return "-"
     get_recipient.short_description = 'Recipient'
@@ -91,13 +91,13 @@ class ReferralRelationshipAdmin(admin.ModelAdmin):
     
     def get_user(self, obj):
         display_name = obj.user.username or f"{obj.user.wallet_address[:10]}..."
-        url = reverse('admin:matrix_userprofile_change', args=[obj.user.id])
+        url = reverse('admin:myapp_userprofile_change', args=[obj.user.id])
         return format_html('<a href="{}">{}</a>', url, display_name)
     get_user.short_description = 'User'
     
     def get_upline(self, obj):
         display_name = obj.upline.username or f"{obj.upline.wallet_address[:10]}..."
-        url = reverse('admin:matrix_userprofile_change', args=[obj.upline.id])
+        url = reverse('admin:myapp_userprofile_change', args=[obj.upline.id])
         return format_html('<a href="{}">{}</a>', url, display_name)
     get_upline.short_description = 'Upline'
     

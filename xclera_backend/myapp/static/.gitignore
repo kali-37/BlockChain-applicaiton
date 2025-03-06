@@ -1,0 +1,2 @@
+# The contract_abi files to be ignored , which are typically in json format 
+*.json

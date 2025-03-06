@@ -68,6 +68,19 @@ MIDDLEWARE = [
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_hex(32))
 JWT_EXPIRATION_DELTA = timedelta(days=7)
 
+
+# Web3 and Blockchain settings
+WEB3_PROVIDER_URL = os.getenv('WEB3_PROVIDER_URL', 'http://127.0.0.1:8545')
+CHAIN_ID = int(os.getenv('CHAIN_ID', '31337'))
+CONTRACT_ADDRESS = os.getenv('CONTRACT_ADDRESS', '0x5fbdb2315678afecb367f032d93f642f64180aa3')
+ROOT_USER_ADDRESS = os.getenv('ROOT_USER_ADDRESS', '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
+COMPANY_WALLET_ADDRESS = os.getenv('COMPANY_WALLET_ADDRESS', '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266')
+
+
+
+
+
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "myapp.authentication.Web3Authentication",
@@ -171,6 +184,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+
+
+BASE_DIR_PATH = str(BASE_DIR)
+CONTRACT_ABI_PATH = os.getenv(
+    'CONTRACT_ABI_PATH', 
+    os.path.join(BASE_DIR_PATH, 'myapp', 'static', 'contract_abi.json')
+)
+
+# Ensure the ABI file exists
+if not os.path.exists(CONTRACT_ABI_PATH):
+    print(f"WARNING: Contract ABI file not found at {CONTRACT_ABI_PATH}")
+    print("Please ensure you've copied the ABI file from deployments/ to the correct location")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
