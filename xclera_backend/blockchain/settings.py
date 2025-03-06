@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from pickle import FALSE
 from dotenv import load_dotenv
 import os
 import secrets
@@ -30,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-7_9y9s10hig@85b^v6d32&-!c7-9zrnu$4b(aq5ail&n(28mhi"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG= True
 
 ALLOWED_HOSTS = []
 

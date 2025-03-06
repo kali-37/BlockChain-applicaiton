@@ -62,3 +62,5 @@ coverage.json
 .DS_Store
 
 # Project specific
+deployments/
+
