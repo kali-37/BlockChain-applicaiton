@@ -11,19 +11,23 @@ describe("SimplifiedMatrixCore", function () {
   let user1;
   let user2;
   let user3;
+  let matrixAddress;
 
-  const LEVEL_1_PRICE = ethers.utils.parseEther("100");
-  const SERVICE_FEE = ethers.utils.parseEther("15");
-  const TOTAL_REGISTRATION_COST = LEVEL_1_PRICE.add(SERVICE_FEE);
+  const LEVEL_1_PRICE = ethers.parseEther("100");
+  const SERVICE_FEE = ethers.parseEther("15");
+  const TOTAL_REGISTRATION_COST = LEVEL_1_PRICE + SERVICE_FEE;
   
   beforeEach(async function () {
     // Get signers
     [owner, companyWallet, rootUser, user1, user2, user3] = await ethers.getSigners();
     
-    // Deploy contract
+    // Deploy contract - ethers v6 way
     Matrix = await ethers.getContractFactory("SimplifiedMatrixCore");
     matrixContract = await Matrix.deploy(companyWallet.address, rootUser.address);
-    await matrixContract.deployed();
+    
+    // Wait for deployment to complete
+    await matrixContract.waitForDeployment();
+    matrixAddress = await matrixContract.getAddress();
   });
 
   describe("Deployment", function () {
@@ -66,9 +70,9 @@ describe("SimplifiedMatrixCore", function () {
       const rootUserBalanceAfter = await ethers.provider.getBalance(rootUser.address);
       const companyBalanceAfter = await ethers.provider.getBalance(companyWallet.address);
       
-      // Check balances
-      expect(rootUserBalanceAfter.sub(rootUserBalanceBefore)).to.equal(LEVEL_1_PRICE);
-      expect(companyBalanceAfter.sub(companyBalanceBefore)).to.equal(SERVICE_FEE);
+      // Check balances - ethers v6 uses BigInt
+      expect(rootUserBalanceAfter - rootUserBalanceBefore).to.equal(LEVEL_1_PRICE);
+      expect(companyBalanceAfter - companyBalanceBefore).to.equal(SERVICE_FEE);
     });
 
     it("Should reject registration with invalid referrer", async function () {
@@ -84,7 +88,7 @@ describe("SimplifiedMatrixCore", function () {
       // Try to register with insufficient payment
       await expect(
         matrixContract.connect(user1).register(rootUser.address, {
-          value: ethers.utils.parseEther("50")
+          value: ethers.parseEther("50")
         })
       ).to.be.revertedWith("Insufficient payment");
     });
@@ -104,7 +108,7 @@ describe("SimplifiedMatrixCore", function () {
 
     it("Should allow level upgrade", async function () {
       // Calculate level 2 upgrade cost
-      const level2Cost = ethers.utils.parseEther("150");
+      const level2Cost = ethers.parseEther("150");
       
       // Upgrade user1 to level 2
       await matrixContract.connect(user1).upgradeLevel(2, rootUser.address, {
@@ -117,9 +121,9 @@ describe("SimplifiedMatrixCore", function () {
 
     it("Should split upgrade fee between upline and company", async function () {
       // Calculate level 2 upgrade cost
-      const level2Cost = ethers.utils.parseEther("150");
-      const companyFee = level2Cost.mul(20).div(100); // 20% company fee
-      const uplineFee = level2Cost.sub(companyFee);
+      const level2Cost = ethers.parseEther("150");
+      const companyFee = (level2Cost * 20n) / 100n; // 20% company fee
+      const uplineFee = level2Cost - companyFee;
       
       const rootUserBalanceBefore = await ethers.provider.getBalance(rootUser.address);
       const companyBalanceBefore = await ethers.provider.getBalance(companyWallet.address);
@@ -133,15 +137,15 @@ describe("SimplifiedMatrixCore", function () {
       const companyBalanceAfter = await ethers.provider.getBalance(companyWallet.address);
       
       // Check balances
-      expect(rootUserBalanceAfter.sub(rootUserBalanceBefore)).to.equal(uplineFee);
-      expect(companyBalanceAfter.sub(companyBalanceBefore)).to.equal(companyFee);
+      expect(rootUserBalanceAfter - rootUserBalanceBefore).to.equal(uplineFee);
+      expect(companyBalanceAfter - companyBalanceBefore).to.equal(companyFee);
     });
 
     it("Should reject level skipping", async function () {
       // Try to upgrade from level 1 to level 3
       await expect(
         matrixContract.connect(user1).upgradeLevel(3, rootUser.address, {
-          value: ethers.utils.parseEther("200")
+          value: ethers.parseEther("200")
         })
       ).to.be.revertedWith("Can only upgrade to next level");
     });
@@ -150,14 +154,14 @@ describe("SimplifiedMatrixCore", function () {
       // Try to upgrade with insufficient payment
       await expect(
         matrixContract.connect(user1).upgradeLevel(2, rootUser.address, {
-          value: ethers.utils.parseEther("100")
+          value: ethers.parseEther("100")
         })
       ).to.be.revertedWith("Insufficient payment");
     });
 
     it("Should verify upline is registered and has sufficient level", async function () {
       // Calculate level 2 upgrade cost
-      const level2Cost = ethers.utils.parseEther("150");
+      const level2Cost = ethers.parseEther("150");
       
       // Try to upgrade with an invalid upline
       await expect(
