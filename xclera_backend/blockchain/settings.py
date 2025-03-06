@@ -62,6 +62,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Custom middleware
     "myapp.middleware.AuthExemptMiddleware",
+    'myapp.middleware.ProtectedFieldsMiddleware'
 ]
 
 # JWT Settings

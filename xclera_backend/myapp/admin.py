@@ -4,26 +4,37 @@ from django.utils.html import format_html
 from django.urls import reverse
 from .models import UserProfile, Level, Transaction, ReferralRelationship
 
+class ReadOnlyModelAdmin(admin.ModelAdmin):
+    """Base admin class for models that should be read-only"""
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'wallet_address', 'get_referrer', 'current_level', 
                     'direct_referrals_count', 'max_referral_depth', 'is_profile_complete')
     list_filter = ('current_level', 'is_registered_on_chain', 'date_registered', 'country')
     search_fields = ('username', 'wallet_address', 'email', 'phone_number')
-    readonly_fields = ('direct_referrals_count', 'max_referral_depth', 'is_profile_complete', 'wallet_address', 'date_registered')
-    fieldsets = (
-        ('User Information', {
-            'fields': ('username', 'email', 'country', 'phone_number', 'wallet_address')
-        }),
-        ('Referral Information', {
-            'fields': ('referrer',)
-        }),
-        ('Level Information', {
-            'fields': ('current_level', 'direct_referrals_count', 'max_referral_depth')
-        }),
-        ('Status', {
-            'fields': ('is_registered_on_chain', 'date_registered', 'is_profile_complete')
-        }),
+    
+    # These fields are completely read-only and cannot be changed
+    readonly_fields = ('wallet_address', 'referrer', 'date_registered', 
+                      'is_registered_on_chain', 'direct_referrals_count', 
+                      'max_referral_depth', 'current_level')
+    
+    # Only allow editing specific fields, excluding critical system fields
+    fields = (
+        # Read-only blockchain fields
+        'wallet_address', 'referrer', 'date_registered', 'is_registered_on_chain',
+        'current_level', 'direct_referrals_count', 'max_referral_depth',
+        # Editable profile fields
+        'username', 'email', 'country', 'phone_number',
     )
     
     def display_name(self, obj):
@@ -43,23 +54,33 @@ class UserProfileAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         # Profiles should be created through the registration process
         return False
+    
+    def get_readonly_fields(self, request, obj=None):
+        # If this is an existing object, prevent changing critical fields
+        if obj: 
+            return self.readonly_fields
+        return []
 
 @admin.register(Level)
-class LevelAdmin(admin.ModelAdmin):
+class LevelAdmin(ReadOnlyModelAdmin):
+    """
+    Levels should be read-only to preserve system integrity.
+    Changing level requirements would disrupt the matrix structure.
+    """
     list_display = ('level_number', 'price', 'min_direct_referrals', 'min_referral_depth')
     ordering = ('level_number',)
     search_fields = ('level_number',)
 
 @admin.register(Transaction)
-class TransactionAdmin(admin.ModelAdmin):
+class TransactionAdmin(ReadOnlyModelAdmin):
+    """
+    Transactions must be immutable for blockchain consistency and audit trails
+    """
     list_display = ('id', 'get_user', 'transaction_type', 'amount', 'level', 
                    'get_recipient', 'status', 'created_at')
     list_filter = ('transaction_type', 'status', 'level', 'created_at')
     search_fields = ('user__username', 'user__wallet_address', 'transaction_hash', 
                     'recipient__username', 'recipient__wallet_address')
-    readonly_fields = ('user', 'transaction_type', 'amount', 'level', 
-                      'recipient', 'transaction_hash', 'created_at')
-    ordering = ('-created_at',)
     
     def get_user(self, obj):
         display_name = obj.user.username or f"{obj.user.wallet_address[:10]}..."
@@ -74,20 +95,16 @@ class TransactionAdmin(admin.ModelAdmin):
             return format_html('<a href="{}">{}</a>', url, display_name)
         return "-"
     get_recipient.short_description = 'Recipient'
-    
-    def has_add_permission(self, request):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 @admin.register(ReferralRelationship)
-class ReferralRelationshipAdmin(admin.ModelAdmin):
+class ReferralRelationshipAdmin(ReadOnlyModelAdmin):
+    """
+    Referral relationships must be immutable to preserve network integrity
+    """
     list_display = ('id', 'get_user', 'get_upline', 'level', 'date_created')
     list_filter = ('level', 'date_created')
     search_fields = ('user__username', 'user__wallet_address', 
                     'upline__username', 'upline__wallet_address')
-    readonly_fields = ('user', 'upline', 'level', 'date_created')
     
     def get_user(self, obj):
         display_name = obj.user.username or f"{obj.user.wallet_address[:10]}..."
@@ -100,9 +117,3 @@ class ReferralRelationshipAdmin(admin.ModelAdmin):
         url = reverse('admin:myapp_userprofile_change', args=[obj.upline.id])
         return format_html('<a href="{}">{}</a>', url, display_name)
     get_upline.short_description = 'Upline'
-    
-    def has_add_permission(self, request):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
