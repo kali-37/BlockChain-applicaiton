@@ -1,0 +1,29 @@
+{
+  "name": "blockchain-applicaiton",
+  "version": "1.0.0",
+  "description": "A centralized implementation of the Xclera Matrix Marketing System using Django backend and Solidity smart contract integration. This hybrid approach handles most of the referral tree logic in Django to save gas costs, while only performing necessary transactions on the blockchain.",
+  "main": "hardhat.config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kali-37/BlockChain-applicaiton.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kali-37/BlockChain-applicaiton/issues"
+  },
+  "homepage": "https://github.com/kali-37/BlockChain-applicaiton#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.2.0",
+    "dotenv": "^16.4.7",
+    "hardhat": "^2.22.19"
+  }
+}
