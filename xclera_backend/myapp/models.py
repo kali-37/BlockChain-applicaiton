@@ -3,10 +3,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-# models.py
-from django.db import models
-from django.utils import timezone
-
 class UserProfile(models.Model):
     """User profile with blockchain and referral data"""
     # Basic user information (can be added after wallet registration)

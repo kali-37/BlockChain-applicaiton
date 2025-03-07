@@ -63,4 +63,5 @@ coverage.json
 
 # Project specific
 deployments/
+tamper_test/
 

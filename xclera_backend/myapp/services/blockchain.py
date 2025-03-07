@@ -47,7 +47,7 @@ class BlockchainService:
         """Get user's referrer on blockchain"""
         return self.contract.functions.getUserReferrer(wallet_address).call()
     
-    def register_user(self, user_wallet, referrer_wallet, private_key):
+    def register_user(self, user_wallet, referrer_wallet):
         """Register a new user on the blockchain"""
         # Get constants from contract
         level_1_price = 100  # 100 USDT
@@ -69,7 +69,7 @@ class BlockchainService:
         })
         
         # Sign and send transaction
-        signed_txn = self.w3.eth.account.sign_transaction(transaction, private_key)
+        signed_txn = self.w3.eth.account.sign_transaction(transaction)
         tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
     
         # Wait for transaction receipt
@@ -81,7 +81,7 @@ class BlockchainService:
             'block_number': tx_receipt["blockNumber"]
         }
     
-    def upgrade_level(self, user_wallet, new_level, upline_wallet, private_key):
+    def upgrade_level(self, user_wallet, new_level, upline_wallet):
         """Upgrade user to a new level on the blockchain"""
         # Calculate upgrade fee (150 for level 2, 200 for level 3, etc.)
         upgrade_fee = (new_level * 50) + 50
@@ -104,7 +104,7 @@ class BlockchainService:
         })
         
         # Sign and send transaction
-        signed_txn = self.w3.eth.account.sign_transaction(transaction, private_key)
+        signed_txn = self.w3.eth.account.sign_transaction(transaction)
         tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
         
         # Wait for transaction receipt

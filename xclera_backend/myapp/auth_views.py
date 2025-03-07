@@ -9,6 +9,9 @@ from rest_framework.permissions import AllowAny
 from .models import UserProfile
 from .authentication import Web3AuthBackend
 
+
+nonce_values = []
+
 class NonceView(APIView):
     """
     Generate a random nonce for wallet signature
@@ -30,6 +33,7 @@ class NonceView(APIView):
         
         # Store the nonce in the session (can also be stored in cache or database)
         request.session[f"nonce_{wallet_address}"] = nonce
+        nonce_values.append(nonce)
         
         return Response({
             "message": message,
@@ -46,6 +50,7 @@ class AuthenticateView(APIView):
         wallet_address = request.data.get('wallet_address')
         signature = request.data.get('signature')
         nonce = request.data.get('nonce')
+        print(nonce_values)
         
         if not all([wallet_address, signature, nonce]):
             return Response(

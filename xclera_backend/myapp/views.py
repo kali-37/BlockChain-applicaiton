@@ -129,7 +129,6 @@ class RegistrationView(viewsets.ViewSet):
                 tx_result = blockchain_service.register_user(
                     user_wallet=serializer.validated_data['wallet_address'],
                     referrer_wallet=referrer_profile.wallet_address,
-                    private_key=serializer.validated_data['private_key']
                 )
                 
                 if tx_result['status'] == 'success':
@@ -213,7 +212,6 @@ class UpgradeLevelView(viewsets.ViewSet):
                     user_wallet=profile.wallet_address,
                     new_level=target_level,
                     upline_wallet=upline_wallet,
-                    private_key=serializer.validated_data['private_key']
                 )
                 
                 if tx_result['status'] == 'success':
