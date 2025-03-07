@@ -50,7 +50,7 @@ class AuthenticateView(APIView):
         wallet_address = request.data.get('wallet_address')
         signature = request.data.get('signature')
         nonce = request.data.get('nonce')
-        print(nonce_values)
+        print(nonce_values,nonce,"       ",request.session.get(f"nonce_{wallet_address}"))
         
         if not all([wallet_address, signature, nonce]):
             return Response(
