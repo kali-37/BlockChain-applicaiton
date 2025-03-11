@@ -1,4 +1,3 @@
-# xclera_backend/myapp/management/commands/create_root_user.py
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from myapp.models import UserProfile

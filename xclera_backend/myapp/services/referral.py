@@ -1,4 +1,3 @@
-# services/referral.py
 from django.db import transaction
 from django.db.models import F
 from ..models import UserProfile, ReferralRelationship, Level, Transaction

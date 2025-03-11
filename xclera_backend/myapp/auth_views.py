@@ -1,4 +1,3 @@
-# auth_views.py
 import random
 import string
 from rest_framework import status

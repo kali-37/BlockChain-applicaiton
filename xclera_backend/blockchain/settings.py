@@ -99,7 +99,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
 }
-
+APPEND_SLASH = False
 
 AUTH_EXEMPT_ROUTES = [
     "/api/auth/nonce/",

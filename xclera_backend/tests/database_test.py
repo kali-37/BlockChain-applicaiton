@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# test_db_connection.py - Test Django database connection to xclera
-
 import os
 import django
 from django.db import connections

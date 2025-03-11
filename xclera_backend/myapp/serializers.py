@@ -1,4 +1,3 @@
-# serializers.py
 from rest_framework import serializers
 from myapp.models import UserProfile, Level, Transaction, ReferralRelationship
 from myapp.services.referral import ReferralService

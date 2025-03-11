@@ -1,10 +1,8 @@
-# middleware.py
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 from rest_framework.authentication import get_authorization_header
 from myapp.models import UserProfile
 
-# middleware.py addition
 
 class ProtectedFieldsMiddleware(MiddlewareMixin):
     """Middleware to prevent changes to protected fields in admin"""
