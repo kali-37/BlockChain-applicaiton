@@ -6,7 +6,7 @@ import dotenv
 import os
 
 dotenv.load_dotenv()
-
+input("Make Sure you have set the ROOT_USER_ADDRESS in the .env file and press Enter to continue, or press Ctrl+C to exit")
 
 class Command(BaseCommand):
     help = 'Create the root user for the Xclera Matrix Marketing System'
@@ -25,7 +25,10 @@ class Command(BaseCommand):
         # Check if root user already exists
         if UserProfile.objects.filter(wallet_address=root_wallet).exists():
             self.stdout.write(self.style.WARNING(f'Root user with wallet {root_wallet} already exists'))
-            return
+            if input("Do you wanna delete the existing root user and create a new one? (y/n)")=="y":
+                UserProfile.objects.filter(wallet_address=root_wallet).delete()
+            else:
+                return
             
         # Create the root user
         root_user = UserProfile.objects.create(
@@ -37,5 +40,6 @@ class Command(BaseCommand):
             direct_referrals_count=0,
             max_referral_depth=0
         )
+        root_user.referrer = root_user
         
         self.stdout.write(self.style.SUCCESS(f'Successfully created root user with wallet {root_wallet}'))
