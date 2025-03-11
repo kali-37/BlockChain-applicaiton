@@ -46,8 +46,12 @@ class BlockchainService:
         """Get user's referrer on blockchain"""
         return self.contract.functions.getUserReferrer(wallet_address).call()
     
-    def register_user(self, user_wallet, referrer_wallet):
-        """Register a new user on the blockchain"""
+    def build_register_transaction(self, user_wallet, referrer_wallet):
+        """
+        Build an unsigned transaction for user registration
+        
+        Returns transaction data that needs to be signed by the user's wallet
+        """
         # Get constants from contract
         level_1_price = 100  # 100 USDT
         service_fee = 15     # 15 USDT
@@ -67,21 +71,14 @@ class BlockchainService:
             'nonce': self.w3.eth.get_transaction_count(user_wallet)
         })
         
-        # Sign and send transaction
-        signed_txn = self.w3.eth.account.sign_transaction(transaction)
-        tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        return transaction
     
-        # Wait for transaction receipt
-        tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
+    def build_upgrade_transaction(self, user_wallet, new_level, upline_wallet):
+        """
+        Build an unsigned transaction for level upgrade
         
-        return {
-            'tx_hash': tx_hash.hex(),
-            'status': 'success' if tx_receipt["status"] == 1 else 'failed',
-            'block_number': tx_receipt["blockNumber"]
-        }
-    
-    def upgrade_level(self, user_wallet, new_level, upline_wallet):
-        """Upgrade user to a new level on the blockchain"""
+        Returns transaction data that needs to be signed by the user's wallet
+        """
         # Calculate upgrade fee (150 for level 2, 200 for level 3, etc.)
         upgrade_fee = (new_level * 50) + 50
 
@@ -102,15 +99,26 @@ class BlockchainService:
             'nonce': self.w3.eth.get_transaction_count(user_wallet)
         })
         
-        # Sign and send transaction
-        signed_txn = self.w3.eth.account.sign_transaction(transaction)
-        tx_hash = self.w3.eth.send_raw_transaction(signed_txn.raw_transaction)
+        return transaction
+    
+    def submit_transaction(self, signed_transaction):
+        """
+        Submit a previously signed transaction to the blockchain
+        
+        Args:
+            signed_transaction: The signed transaction from the user's wallet
+            
+        Returns:
+            Dict with transaction hash, status, and block number
+        """
+        # Send the signed transaction
+        tx_hash = self.w3.eth.send_raw_transaction(signed_transaction)
         
         # Wait for transaction receipt
         tx_receipt = self.w3.eth.wait_for_transaction_receipt(tx_hash)
         
         return {
             'tx_hash': tx_hash.hex(),
-            'status': 'success' if tx_receipt["status"]== 1 else 'failed',
+            'status': 'success' if tx_receipt["status"] == 1 else 'failed',
             'block_number': tx_receipt["blockNumber"]
         }

@@ -140,6 +140,9 @@ class ReferralRelationshipSerializer(serializers.ModelSerializer):
 class RegistrationSerializer(serializers.Serializer):
     wallet_address = serializers.CharField(max_length=42)
     referrer_wallet = serializers.CharField(max_length=42)
+    
+    # Optional signed transaction (when submitting after wallet signing)
+    signed_transaction = serializers.CharField(required=False)
 
     # Optional profile fields
     username = serializers.CharField(
@@ -169,6 +172,9 @@ class RegistrationSerializer(serializers.Serializer):
 class UpgradeLevelSerializer(serializers.Serializer):
     wallet_address = serializers.CharField(max_length=42)
     target_level = serializers.IntegerField(min_value=2, max_value=19)
+    
+    # Optional signed transaction (when submitting after wallet signing)
+    signed_transaction = serializers.CharField(required=False)
 
     def validate(self, data):
         try:

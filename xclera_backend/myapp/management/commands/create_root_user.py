@@ -40,5 +40,6 @@ class Command(BaseCommand):
             max_referral_depth=0
         )
         root_user.referrer = root_user
+        root_user.save()
         
         self.stdout.write(self.style.SUCCESS(f'Successfully created root user with wallet {root_wallet}'))

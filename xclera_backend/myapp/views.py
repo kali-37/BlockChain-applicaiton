@@ -2,8 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.contrib.auth.models import User
 from django.db import transaction
+from blockchain.settings import ROOT_USER_ADDRESS
 from .models import UserProfile, Level, Transaction, ReferralRelationship
 from .serializers import (
     UserProfileSerializer,
@@ -23,7 +23,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-
 
     def get_serializer_class(self):
         if self.action in ["update", "partial_update"]:
@@ -116,7 +115,6 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-# views.py excerpt for registration
 class RegistrationView(viewsets.ViewSet):
     """API endpoint for registering new users"""
 
@@ -136,65 +134,91 @@ class RegistrationView(viewsets.ViewSet):
                     {"error": "Referrer not found"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
-            try:
-                # Initialize blockchain service
-                blockchain_service = BlockchainService()
-
-                # Register on blockchain
-                tx_result = blockchain_service.register_user(
-                    user_wallet=serializer.validated_data["wallet_address"],
-                    referrer_wallet=referrer_profile.wallet_address,
-                )
-
-                if tx_result["status"] == "success":
-                    # Extract optional profile fields
-                    profile_data = {
-                        "username": serializer.validated_data.get("username"),
-                        "country": serializer.validated_data.get("country"),
-                        "phone_number": serializer.validated_data.get("phone_number"),
-                        "email": serializer.validated_data.get("email"),
-                    }
-
-                    # Register in Django database
-                    profile = ReferralService.register_user(
-                        wallet_address=serializer.validated_data["wallet_address"],
-                        referrer_profile=referrer_profile,
-                        profile_data=profile_data,
+            # Check the registration mode
+            # If signed_transaction is provided, process a completed registration
+            if "signed_transaction" in request.data:
+                try:
+                    # Initialize blockchain service
+                    blockchain_service = BlockchainService()
+                    
+                    # Submit the signed transaction
+                    tx_result = blockchain_service.submit_transaction(
+                        request.data["signed_transaction"]
                     )
+                    
+                    if tx_result["status"] == "success":
+                        # Extract optional profile fields
+                        profile_data = {
+                            "username": serializer.validated_data.get("username"),
+                            "country": serializer.validated_data.get("country"),
+                            "phone_number": serializer.validated_data.get("phone_number"),
+                            "email": serializer.validated_data.get("email"),
+                        }
 
-                    # Create transaction record
-                    Transaction.objects.create(
-                        user=profile,
-                        transaction_type="REGISTRATION",
-                        amount=115,  # 100 USDT level fee + 15 USDT service fee
-                        level=1,
-                        recipient=referrer_profile,
-                        transaction_hash=tx_result["tx_hash"],
-                        status="CONFIRMED",
+                        # Register in Django database
+                        profile = ReferralService.register_user(
+                            wallet_address=serializer.validated_data["wallet_address"],
+                            referrer_profile=referrer_profile,
+                            profile_data=profile_data,
+                        )
+
+                        # Create transaction record
+                        Transaction.objects.create(
+                            user=profile,
+                            transaction_type="REGISTRATION",
+                            amount=115,  # 100 USDT level fee + 15 USDT service fee
+                            level=1,
+                            recipient=referrer_profile,
+                            transaction_hash=tx_result["tx_hash"],
+                            status="CONFIRMED",
+                        )
+
+                        return Response(
+                            {
+                                "message": "Registration successful",
+                                "profile_id": profile.pk,
+                                "transaction_hash": tx_result["tx_hash"],
+                                "is_profile_complete": profile.is_profile_complete,
+                            },
+                            status=status.HTTP_201_CREATED,
+                        )
+                    else:
+                        return Response(
+                            {
+                                "error": "Blockchain registration failed",
+                                "details": tx_result,
+                            },
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        )
+                
+                except Exception as e:
+                    return Response(
+                        {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
                     )
-
+            else:
+                # Just prepare the transaction for the frontend to sign
+                try:
+                    # Initialize blockchain service
+                    blockchain_service = BlockchainService()
+                    
+                    # Build the transaction for signing
+                    transaction = blockchain_service.build_register_transaction(
+                        user_wallet=serializer.validated_data["wallet_address"],
+                        referrer_wallet=referrer_profile.wallet_address,
+                    )
+                    
                     return Response(
                         {
-                            "message": "Registration successful",
-                            "profile_id": profile.pk,
-                            "transaction_hash": tx_result["tx_hash"],
-                            "is_profile_complete": profile.is_profile_complete,
+                            "message": "Transaction prepared for signing",
+                            "transaction": transaction,
+                            "instructions": "Sign this transaction with your wallet and submit the signed transaction back to this endpoint"
                         },
-                        status=status.HTTP_201_CREATED,
+                        status=status.HTTP_200_OK,
                     )
-                else:
+                except Exception as e:
                     return Response(
-                        {
-                            "error": "Blockchain registration failed",
-                            "details": tx_result,
-                        },
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
                     )
-
-            except Exception as e:
-                return Response(
-                    {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -235,42 +259,68 @@ class UpgradeLevelView(viewsets.ViewSet):
                 upline_wallet = (
                     eligible_upline.wallet_address
                     if eligible_upline
-                    else "0x0000000000000000000000000000000000000000"
+                    else ROOT_USER_ADDRESS
                 )
 
-                # Initialize blockchain service
-                blockchain_service = BlockchainService()
-
-                # Upgrade on blockchain
-                tx_result = blockchain_service.upgrade_level(
-                    user_wallet=profile.wallet_address,
-                    new_level=target_level,
-                    upline_wallet=upline_wallet,
-                )
-
-                if tx_result["status"] == "success":
-                    # Update in Django database
-                    upgrade_result = ReferralService.upgrade_user_level(
-                        profile=profile,
-                        target_level=target_level,
-                        transaction_hash=tx_result["tx_hash"],
+                # Check the upgrade mode
+                # If signed_transaction is provided, process a completed upgrade
+                if "signed_transaction" in request.data:
+                    # Initialize blockchain service
+                    blockchain_service = BlockchainService()
+                    
+                    # Submit the signed transaction
+                    tx_result = blockchain_service.submit_transaction(
+                        request.data["signed_transaction"]
                     )
 
-                    return Response(
-                        {
-                            "message": "Level upgrade successful",
-                            "new_level": target_level,
-                            "transaction_hash": tx_result["tx_hash"],
-                            "upline_rewarded": upgrade_result["upline_rewarded"],
-                            "upline_reward": float(upgrade_result["upline_reward"]),
-                        },
-                        status=status.HTTP_200_OK,
-                    )
+                    if tx_result["status"] == "success":
+                        # Update in Django database
+                        upgrade_result = ReferralService.upgrade_user_level(
+                            profile=profile,
+                            target_level=target_level,
+                            transaction_hash=tx_result["tx_hash"],
+                        )
+
+                        return Response(
+                            {
+                                "message": "Level upgrade successful",
+                                "new_level": target_level,
+                                "transaction_hash": tx_result["tx_hash"],
+                                "upline_rewarded": upgrade_result["upline_rewarded"],
+                                "upline_reward": float(upgrade_result["upline_reward"]),
+                            },
+                            status=status.HTTP_200_OK,
+                        )
+                    else:
+                        return Response(
+                            {"error": "Blockchain upgrade failed", "details": tx_result},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        )
                 else:
-                    return Response(
-                        {"error": "Blockchain upgrade failed", "details": tx_result},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    )
+                    # Just prepare the transaction for the frontend to sign
+                    try:
+                        # Initialize blockchain service
+                        blockchain_service = BlockchainService()
+                        
+                        # Build the transaction for signing
+                        transaction = blockchain_service.build_upgrade_transaction(
+                            user_wallet=profile.wallet_address,
+                            new_level=target_level,
+                            upline_wallet=upline_wallet,
+                        )
+                        
+                        return Response(
+                            {
+                                "message": "Transaction prepared for signing",
+                                "transaction": transaction,
+                                "instructions": "Sign this transaction with your wallet and submit the signed transaction back to this endpoint"
+                            },
+                            status=status.HTTP_200_OK,
+                        )
+                    except Exception as e:
+                        return Response(
+                            {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        )
 
             except UserProfile.DoesNotExist:
                 return Response(
