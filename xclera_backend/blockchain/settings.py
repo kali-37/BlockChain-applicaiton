@@ -80,26 +80,32 @@ COMPANY_WALLET_ADDRESS = os.getenv('COMPANY_WALLET_ADDRESS', '0xf39Fd6e51aad88F6
 
 
 
+DEVELOPER_MODE = os.getenv("DEVELOPER_MODE", "False").lower() == "true"
 
+if DEVELOPER_MODE:
+    print("Developer mode enabled: All API endpoints will be accessible without authentication")
+    DEFAULT_PERMISSION_CLASSES = ["rest_framework.permissions.AllowAny"]
+else:
+    DEFAULT_PERMISSION_CLASSES = ["rest_framework.permissions.IsAuthenticated"]
 
+# Update your REST_FRAMEWORK settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "myapp.authentication.Web3Authentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
+    "DEFAULT_PERMISSION_CLASSES": DEFAULT_PERMISSION_CLASSES,  
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
 }
+
+
 AUTH_EXEMPT_ROUTES = [
     "/api/auth/nonce/",
     "/api/auth/authenticate/",
     "/api/register/",
 ]
-
 # Session settings
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"

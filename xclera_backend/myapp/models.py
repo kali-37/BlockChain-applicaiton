@@ -17,10 +17,10 @@ class UserProfile(models.Model):
     wallet_address = models.CharField(max_length=42, unique=True)
     referrer = models.ForeignKey(
         "self",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
         related_name="referrals",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
     current_level = models.PositiveSmallIntegerField(default=1)
     direct_referrals_count = models.PositiveIntegerField(default=0)

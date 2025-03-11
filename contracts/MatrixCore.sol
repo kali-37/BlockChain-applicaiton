@@ -44,7 +44,7 @@ contract SimplifiedMatrixCore is Ownable, ReentrancyGuard {
         // Register root user
         User storage root = users[_rootUser];
         root.isRegistered = true;
-        root.referrer = address(0); // No referrer for root
+        root.referrer = _rootUser; // No referrer for root
         root.currentLevel = 19; // Max level for the root user
     }
 
