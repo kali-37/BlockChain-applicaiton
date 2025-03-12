@@ -33,7 +33,7 @@ SECRET_KEY = "django-insecure-7_9y9s10hig@85b^v6d32&-!c7-9zrnu$4b(aq5ail&n(28mhi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG= True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.100.8"]
 
 
 # Application definition
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     # Third-party apps
     "rest_framework",
     "rest_framework.authtoken",
@@ -61,9 +62,14 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Custom middleware
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     "myapp.middleware.AuthExemptMiddleware",
     'myapp.middleware.ProtectedFieldsMiddleware'
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 # JWT Settings
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_hex(32))
