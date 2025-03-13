@@ -5,6 +5,8 @@ import Web3, { MetaMaskProvider } from "web3";
 import axios from "axios";
 import signTransaction from "../utils/sign_transaction";
 
+const PRIVATE_KEY = import.meta.env.VITE_BASE_URL;
+console.log(PRIVATE_KEY);
 interface WalletConnectProps {
     onClose: () => void;
 }
