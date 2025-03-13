@@ -298,7 +298,6 @@ Content-Type: application/json
 ```http
 POST /api/register/
 Content-Type: application/json
-Authorization: Bearer <token>
 
 {
   "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
@@ -334,7 +333,6 @@ Authorization: Bearer <token>
 ```http
 POST /api/register/
 Content-Type: application/json
-Authorization: Bearer <token>
 
 {
   "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
