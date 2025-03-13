@@ -2,8 +2,16 @@ import { dummyData } from "../../../data/allRankDummyData";
 import ant from "../../../assets/img/ant.png";
 import { MdDone } from "react-icons/md";
 import { Link } from "react-router";
+import getLevels from "../../../services/user/levelup";
+import { useEffect } from "react";
 
 function AllRanks() {
+    useEffect(() => {
+        async function data() {
+            await getLevels();
+        }
+        data();
+    }, []);
     return (
         <>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-4 p-4 ">

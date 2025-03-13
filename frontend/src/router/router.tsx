@@ -20,6 +20,14 @@ function Router() {
                             </Suspense>
                         }
                     />
+                    <Route
+                        path="/login"
+                        element={
+                            <Suspense fallback={<Loading />}>
+                                <Home />
+                            </Suspense>
+                        }
+                    />
                     {userRoutes.map((userRoute) => (
                         <Route
                             key={userRoute.id}

@@ -1,0 +1,5 @@
+.venv/Scripts/activate - > compulsary on one terminal 
+python setup.py 
+npx hardhat node
+python xclera_backend/manage.py runserver
+
