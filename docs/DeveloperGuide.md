@@ -302,10 +302,6 @@ Content-Type: application/json
 {
   "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
   "referrer_wallet": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "username": "TestUser",
-  "country": "United States",
-  "phone_number": "+1234567890",
-  "email": "test@example.com"
 }
 ```
 
@@ -337,10 +333,6 @@ Content-Type: application/json
 {
   "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
   "referrer_wallet": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "username": "TestUser",
-  "country": "United States",
-  "phone_number": "+1234567890",
-  "email": "test@example.com",
   "signed_transaction": "0x..."
 }
 ```

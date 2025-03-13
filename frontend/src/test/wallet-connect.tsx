@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { GiFoxHead } from "react-icons/gi";
 import { useNavigate } from "react-router-dom";
 import Web3, { MetaMaskProvider } from "web3";
+import axios from "axios";
+import signTransaction from "../utils/sign_transaction";
 
 interface WalletConnectProps {
     onClose: () => void;
@@ -50,6 +52,34 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
 
             // Store wallet info in localStorage
             localStorage.setItem("walletAddress", connectedAccount);
+
+            const transaction = await axios.post(
+                "http://127.0.0.1:8000/api/register/",
+                {
+                    wallet_address: connectedAccount,
+                    referrer_wallet:
+                        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                }
+            );
+            console.log(transaction);
+
+            const data = await signTransaction(transaction?.data?.transaction);
+            console.log("sign transaction ==>", data);
+
+            // const transaction=  fetch ("/api/register",POST, body = { wallet_address of user and wallet address of refferer}.response();
+            // // Call the function
+            // signTransaction(transaction)
+            // .then((signedTx) => {
+            //     // Send the signed transaction back to your backend
+            //     // fetchAPI('/your-backend-endpoint', { signedTransaction: signedTx });
+            //     console.log("Transaction signed successfully:", signedTx);
+            //     fetcthAPI('/api/register', body={wallet_address of user and wallet address of refferer,signedTx
+
+            //     })
+            // })
+            // .catch((error) => {
+            //     console.error("Failed to sign transaction:", error);
+            // });
 
             // Close modal and redirect to dashboard
             setTimeout(() => {
