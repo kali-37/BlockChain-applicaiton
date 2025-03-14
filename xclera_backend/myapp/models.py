@@ -7,9 +7,9 @@ class UserProfile(models.Model):
     """User profile with blockchain and referral data"""
 
     # Basic user information (can be added after wallet registration)
-    username = models.CharField(max_length=100, null=True, blank=True)
-    country = models.CharField(max_length=100, null=True, blank=True)
-    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    username = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20)
     email = models.EmailField(null=True, blank=True)
 
     # Blockchain and referral data
@@ -21,7 +21,7 @@ class UserProfile(models.Model):
         null=True,
         blank=True
     )
-    current_level = models.PositiveSmallIntegerField(default=1)
+    current_level = models.PositiveSmallIntegerField(default=0)
     direct_referrals_count = models.PositiveIntegerField(default=0)
     max_referral_depth = models.PositiveSmallIntegerField(default=0)
     is_registered_on_chain = models.BooleanField(default=False)

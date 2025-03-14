@@ -159,20 +159,17 @@ class RegistrationSerializer(serializers.Serializer):
     wallet_address = serializers.CharField(max_length=42)
     referrer_wallet = serializers.CharField(max_length=42)
     
+    # Required profile fields
+    username = serializers.CharField(max_length=100)
+    country = serializers.CharField(max_length=100)
+    phone_number = serializers.CharField(max_length=20)
+    
+    # Optional fields
+    email = serializers.EmailField(required=False, allow_null=True, allow_blank=True)
+    
     # Optional signed transaction (when submitting after wallet signing)
     signed_transaction = serializers.CharField(required=False)
 
-    # Optional profile fields
-    username = serializers.CharField(
-        max_length=100, required=False, allow_null=True, allow_blank=True
-    )
-    country = serializers.CharField(
-        max_length=100, required=False, allow_null=True, allow_blank=True
-    )
-    phone_number = serializers.CharField(
-        max_length=20, required=False, allow_null=True, allow_blank=True
-    )
-    email = serializers.EmailField(required=False, allow_null=True, allow_blank=True)
 
     def validate_wallet_address(self, value):
         if UserProfile.objects.filter(wallet_address=value).exists():

@@ -45,59 +45,38 @@ class BlockchainService:
     def get_user_referrer(self, wallet_address):
         """Get user's referrer on blockchain"""
         return self.contract.functions.getUserReferrer(wallet_address).call()
-    
-    def build_register_transaction(self, user_wallet, referrer_wallet):
-        """
-        Build an unsigned transaction for user registration
         
-        Returns transaction data that needs to be signed by the user's wallet
-        """
-        # Get constants from contract
-        level_1_price = 100  # 100 USDT
-        service_fee = 15     # 15 USDT
-        total_amount = level_1_price + service_fee
         
-        # Convert wallet addresses to checksum format
-        user_wallet = self.w3.to_checksum_address(user_wallet)
-        referrer_wallet = self.w3.to_checksum_address(referrer_wallet)
-            
-        # Build transaction
-        transaction = self.contract.functions.register(referrer_wallet).build_transaction({
-            'from': user_wallet,
-            'value': self.w3.to_wei(total_amount, 'ether'),
-            'chainId': self.chain_id,
-            'gas': 2000000,  # Estimate gas more accurately in production
-            'gasPrice': self.w3.eth.gas_price,
-            'nonce': self.w3.eth.get_transaction_count(user_wallet)
-        })
-        
-        return transaction
-    
     def build_upgrade_transaction(self, user_wallet, new_level, upline_wallet):
         """
-        Build an unsigned transaction for level upgrade
+        Build an unsigned transaction for level upgrade with USDT
         
         Returns transaction data that needs to be signed by the user's wallet
         """
-        # Calculate upgrade fee (150 for level 2, 200 for level 3, etc.)
+        # Calculate upgrade fee in USDT (150 for level 2, 200 for level 3, etc.)
         upgrade_fee = (new_level * 50) + 50
 
         # Convert wallet addresses to checksum format
         user_wallet = self.w3.to_checksum_address(user_wallet)
         upline_wallet = self.w3.to_checksum_address(upline_wallet)
         
-        # Build transaction
-        transaction = self.contract.functions.upgradeLevel(
-            new_level, 
-            upline_wallet
-        ).build_transaction({
+        # Get the current nonce
+        nonce = self.w3.eth.get_transaction_count(user_wallet)
+        
+        # Build transaction with hex values
+        transaction = {
             'from': user_wallet,
-            'value': self.w3.to_wei(upgrade_fee, 'ether'),
+            'to': self.contract_address,
+            'value': hex(self.w3.to_wei(upgrade_fee, 'ether')),  # Convert to hex
             'chainId': self.chain_id,
-            'gas': 2000000,  # Estimate gas more accurately in production
-            'gasPrice': self.w3.eth.gas_price,
-            'nonce': self.w3.eth.get_transaction_count(user_wallet)
-        })
+            'gas': hex(2000000),  # Gas limit in hex
+            'gasPrice': hex(self.w3.eth.gas_price),  # Gas price in hex
+            'nonce': hex(nonce),  # Nonce in hex
+            'data': self.contract.encodeABI(
+                fn_name='upgradeLevel',
+                args=[new_level, upline_wallet]
+            )
+        }
         
         return transaction
     
