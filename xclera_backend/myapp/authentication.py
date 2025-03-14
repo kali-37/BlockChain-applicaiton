@@ -19,7 +19,9 @@ class Web3Authentication(BaseAuthentication):
 
     def authenticate(self, request):
         # Check if this route is exempt from authentication
+        print("AUTH attmp")
         if getattr(request, "auth_exempt", False):
+            print("exempt route though")
             return None
 
         # Get the Authorization header

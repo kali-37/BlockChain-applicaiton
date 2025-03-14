@@ -6,6 +6,7 @@ from django.db import transaction
 from blockchain.settings import ROOT_USER_ADDRESS
 from .models import UserProfile, Level, Transaction, ReferralRelationship
 from .serializers import (
+    LoginSerializer,
     UserProfileSerializer,
     LevelSerializer,
     TransactionSerializer,

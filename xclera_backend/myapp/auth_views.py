@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.conf import settings
 import secrets
 
-nonce_values = []
+nonce_values =  {}
 
 
 class NonceView(APIView):
@@ -22,7 +22,6 @@ class NonceView(APIView):
     """
 
     permission_classes = [AllowAny]
-
     def get(self, request, wallet_address=None):
         if not wallet_address:
             return Response(
@@ -39,6 +38,7 @@ class NonceView(APIView):
         # Store the nonce in the session (can also be stored in cache or database)
         # Let's save it on more authentic place like redis
         request.session[f"nonce_{wallet_address}"] = nonce
+        nonce_values[wallet_address] = nonce
         return Response({"message": message, "nonce": nonce})
 
 
@@ -61,8 +61,7 @@ class AuthenticateView(APIView):
            )
     
        # Verify the nonce matches what was issued
-       stored_nonce = request.session.get(f"nonce_{wallet_address}")
-       if not stored_nonce or stored_nonce != nonce:
+       if nonce_values.get(wallet_address) != nonce:
            return Response(
                {"error": "Invalid or expired nonce"},
                status=status.HTTP_400_BAD_REQUEST
