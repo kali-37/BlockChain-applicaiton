@@ -12,6 +12,7 @@ import { MdHistory } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router";
 import { Link } from "react-router";
 import { MdLogout } from "react-icons/md";
+import {logout } from "../../../utils/authenticator"
 
 interface UserDrawerProps {
     open: boolean;
@@ -24,7 +25,8 @@ function UserDrawer({ open, handleDrawer }: UserDrawerProps) {
     // console.log(location);
 
     const handleLogOut = () => {
-        localStorage.removeItem("walletAddress");
+        // localStorage.removeItem("walletAddress");
+        logout();
         navigate("/");
     };
     return (

@@ -1,16 +1,43 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios from 'axios';
+import { refreshAccessToken } from './authenticator';
 
+// Create axios instance
 export const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000'
+  baseURL: import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000'
 });
 
-// Helper function to set auth token
-export const setAuthToken = (token: string | null): void => {
+// Set auth token in headers
+export const setAuthToken = (token: string): void => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    localStorage.setItem('token', token);
-  } else {
-    delete api.defaults.headers.common['Authorization'];
-    localStorage.removeItem('token');
   }
 };
+
+// Remove auth tokens from headers
+export const removeAuthTokens = (): void => {
+  delete api.defaults.headers.common['Authorization'];
+};
+
+
+// Setup axios interceptors for token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If error is 401 and we haven't tried refreshing yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      // Try to refresh the token
+      const refreshed = await refreshAccessToken();
+      
+      if (refreshed) {
+        // Retry the original request with new token
+        return api(originalRequest);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
