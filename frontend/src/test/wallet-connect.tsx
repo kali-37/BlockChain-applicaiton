@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { GiFoxHead } from "react-icons/gi";
-import { useNavigate } from "react-router-dom";
-import Web3, { MetaMaskProvider } from "web3";
+import { useNavigate, useLocation } from "react-router-dom";
+import Web3 from "web3";
 import axios from "axios";
-import signTransaction from "../utils/sign_transaction";
+import { api } from '../utils/api';
+import {NonceResponse,AuthResponse ,ProfileResponse} from "../utils/types"
 
-const PRIVATE_KEY = import.meta.env.VITE_BASE_URL;
-console.log(PRIVATE_KEY);
+
 interface WalletConnectProps {
     onClose: () => void;
 }
 
 declare global {
     interface Window {
-        ethereum?: MetaMaskProvider<unknown>;
+        ethereum?: any;
     }
 }
 
@@ -22,6 +22,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const connectWallet = async () => {
         setLoading(true);
@@ -32,63 +33,70 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
             if (!window?.ethereum) {
                 throw new Error("Please install MetaMask!");
             }
-            console.log("ethererum ==> ", window?.ethereum);
-
-            const web3 = new Web3(window?.ethereum);
-            console.log("web3 ==> ", web3);
 
             // Request account access
-            console.log(
-                await window?.ethereum.request({
-                    method: "eth_requestAccounts",
-                })
-            );
-            await window?.ethereum.request({ method: "eth_requestAccounts" });
-
-            // Get connected account
-            const accounts = await web3.eth.getAccounts();
-            console.log("accounts ==> ", accounts);
+            const accounts = await window.ethereum.request({ 
+                method: "eth_requestAccounts" 
+            });
             const connectedAccount = accounts[0];
-
+            
+            // Set account state and store in localStorage
             setAccount(connectedAccount);
-
-            // Store wallet info in localStorage
             localStorage.setItem("walletAddress", connectedAccount);
+            
+            // Get nonce for authentication
+            const nonceResponse = await axios.get<NonceResponse>(
+                `${ 'http://127.0.0.1:8000'}/api/auth/nonce/${connectedAccount}/`
+            );
+            console.log(nonceResponse)
+            const { message, nonce } = nonceResponse.data;
 
-            const transaction = await axios.post(
-                "http://127.0.0.1:8000/api/register/",
+            //FIXEME : It's stuck and metamask is not popping up
+            const signature = await window.ethereum.request({
+                method: 'personal_sign',
+                params: [message, connectedAccount]
+            });
+            
+            // Verify signature with backend and get JWT token
+            const authResponse = await axios.post<AuthResponse>(
+                `${ 'http://127.0.0.1:8000'}/api/auth/authenticate/`,
                 {
                     wallet_address: connectedAccount,
-                    referrer_wallet:
-                        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+                    signature,
+                    nonce
                 }
             );
-            console.log(transaction);
-
-            const data = await signTransaction(transaction?.data?.transaction);
-            console.log("sign transaction ==>", data);
-
-            // const transaction=  fetch ("/api/register",POST, body = { wallet_address of user and wallet address of refferer}.response();
-            // // Call the function
-            // signTransaction(transaction)
-            // .then((signedTx) => {
-            //     // Send the signed transaction back to your backend
-            //     // fetchAPI('/your-backend-endpoint', { signedTransaction: signedTx });
-            //     console.log("Transaction signed successfully:", signedTx);
-            //     fetcthAPI('/api/register', body={wallet_address of user and wallet address of refferer,signedTx
-
-            //     })
-            // })
-            // .catch((error) => {
-            //     console.error("Failed to sign transaction:", error);
-            // });
-
-            // Close modal and redirect to dashboard
+            
+            // Store JWT token for future authenticated requests
+            const { token, profile_exists } = authResponse.data;
+            localStorage.setItem("jwtToken", token);
+            
+            // Set the Authorization header for future requests
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
+            // Get referrer from URL if available
+            const params = new URLSearchParams(location.search);
+            const referrer = params.get('ref');
+            
+            // If new user and referrer is provided, create a profile
+            if (!profile_exists && referrer) {
+                await axios.post(
+                    `${ 'http://127.0.0.1:8000'}/api/login/`,
+                    {
+                        wallet_address: connectedAccount,
+                        referrer_wallet: referrer
+                    }
+                );
+            }
+            
+            // Close the modal and redirect to dashboard
             setTimeout(() => {
                 onClose();
                 navigate("/user/dashboard");
             }, 1000);
+
         } catch (err) {
+            console.error("Wallet connection error:", err);
             setError(
                 err instanceof Error ? err.message : "Failed to connect wallet"
             );
@@ -100,14 +108,14 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
     // Listen for account changes
     useEffect(() => {
         if (window?.ethereum) {
-            window?.ethereum.on("accountsChanged", (accounts: string[]) => {
+            window.ethereum.on("accountsChanged", (accounts: string[]) => {
                 setAccount(accounts[0] || null);
             });
         }
 
         return () => {
             if (window?.ethereum) {
-                window?.ethereum.removeListener("accountsChanged", () => {});
+                window.ethereum.removeListener("accountsChanged", () => {});
             }
         };
     }, []);

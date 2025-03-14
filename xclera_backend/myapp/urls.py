@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     UserProfileViewSet, LevelViewSet, TransactionViewSet,
-    RegistrationView, UpgradeLevelView
+    RegistrationView, UpgradeLevelView, LoginView
 )
 from .auth_views import NonceView, AuthenticateView, VerifyTokenView
 
@@ -12,6 +12,8 @@ router.register(r'levels', LevelViewSet)
 router.register(r'transactions', TransactionViewSet)
 router.register(r'register', RegistrationView, basename='register')
 router.register(r'upgrade', UpgradeLevelView, basename='upgrade')
+router.register(r'login', LoginView, basename='login')
+
 
 urlpatterns = [
     # API endpoints

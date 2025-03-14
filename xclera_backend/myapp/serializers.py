@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from myapp.models import UserProfile, Level, Transaction, ReferralRelationship
 from myapp.services.referral import ReferralService
+import re
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -38,7 +39,24 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if obj.referrer:
             return obj.referrer.username or obj.referrer.wallet_address[:10] + "..."
         return None
+class LoginSerializer(serializers.Serializer):
+    wallet_address = serializers.CharField(max_length=42)
+    referrer_wallet = serializers.CharField(max_length=42, required=False)
 
+    def validate_wallet_address(self, value):
+        # Basic validation for wallet address format
+        if not re.match(r'^0x[a-fA-F0-9]{40}$', value):
+            raise serializers.ValidationError("Invalid wallet address format")
+        return value
+        
+    def validate_referrer_wallet(self, value):
+        # Only validate referrer if provided
+        if value and value != "0x0000000000000000000000000000000000000000":
+            try:
+                UserProfile.objects.get(wallet_address=value)
+            except UserProfile.DoesNotExist:
+                raise serializers.ValidationError("Referrer wallet address not found")
+        return value
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating user profile information"""

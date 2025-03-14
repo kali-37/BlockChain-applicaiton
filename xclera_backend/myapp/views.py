@@ -17,6 +17,72 @@ from .serializers import (
 from .services.blockchain import BlockchainService
 from .services.referral import ReferralService
 
+class LoginView(viewsets.ViewSet):
+    """
+    API endpoint for checking wallet status and creating Level 0 profiles
+    for new users with referrers
+    """
+    
+    permission_classes = [permissions.IsAuthenticated]  # Now requires auth token
+    
+    def create(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            wallet_address = serializer.validated_data["wallet_address"]
+            
+            # Verify the authenticated user matches the requested wallet
+            if request.user.wallet_address != wallet_address:
+                return Response(
+                    {"error": "Authenticated wallet doesn't match requested wallet"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Check if the wallet already exists as a profile
+            try:
+                # Existing user - return profile info
+                profile = UserProfile.objects.get(wallet_address=wallet_address)
+                
+                return Response({
+                    "message": "Profile found",
+                    "wallet_address": wallet_address,
+                    "username": profile.username,
+                    "current_level": profile.current_level,
+                    "is_profile_complete": profile.is_profile_complete,
+                    "is_registered_on_chain": profile.is_registered_on_chain
+                }, status=status.HTTP_200_OK)
+                
+            except UserProfile.DoesNotExist:
+                # New user - check for referrer
+                referrer_wallet = serializer.validated_data.get("referrer_wallet")
+                
+                # Get referrer profile if provided
+                referrer_profile = None
+                if referrer_wallet:
+                    try:
+                        referrer_profile = UserProfile.objects.get(wallet_address=referrer_wallet)
+                    except UserProfile.DoesNotExist:
+                        return Response(
+                            {"error": "Referrer not found"}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                
+                # Create a Level 0 user profile (not registered on chain yet)
+                profile = UserProfile.objects.create(
+                    wallet_address=wallet_address,
+                    referrer=referrer_profile,
+                    current_level=0,  # Level 0 until officially registered
+                    is_registered_on_chain=False
+                )
+                
+                return Response({
+                    "message": "New profile created",
+                    "wallet_address": wallet_address,
+                    "current_level": 0,
+                    "is_registered_on_chain": False,
+                    "referrer": referrer_profile.wallet_address if referrer_profile else None
+                }, status=status.HTTP_201_CREATED)
+                
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     """API endpoint for viewing and updating user profiles"""

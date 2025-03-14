@@ -3,3 +3,208 @@ python setup.py
 npx hardhat node
 python xclera_backend/manage.py runserver
 
+// types.ts
+interface NonceResponse {
+  message: string;
+  nonce: string;
+}
+
+interface AuthResponse {
+  token: string;
+  expires_at: string;
+  wallet_address: string;
+  profile_exists: boolean;
+}
+
+interface ProfileResponse {
+  message: string;
+  wallet_address: string;
+  username?: string;
+  current_level: number;
+  is_profile_complete?: boolean;
+  is_registered_on_chain: boolean;
+  referrer?: string;
+}
+
+// api.ts
+import axios, { AxiosError, AxiosResponse } from 'axios';
+
+// Create an axios instance with the base URL from env
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000'
+});
+
+// Helper function to set auth token
+export const setAuthToken = (token: string | null): void => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    localStorage.setItem('token', token);
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+    localStorage.removeItem('token');
+  }
+};
+
+// wallet-service.ts
+import { api, setAuthToken } from './api';
+import { NonceResponse, AuthResponse, ProfileResponse } from './types';
+
+export class WalletService {
+  private account: string | null = null;
+
+  /**
+   * Connect to MetaMask wallet
+   */
+  public async connectWallet(): Promise<string> {
+    try {
+      if (!window.ethereum) {
+        throw new Error('MetaMask is not installed! Please install it to continue.');
+      }
+
+      // Request accounts from MetaMask
+      const accounts: string[] = await window.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
+      
+      this.account = accounts[0];
+      localStorage.setItem('walletAddress', this.account);
+      
+      return this.account;
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+      throw new Error(
+        error instanceof Error ? error.message : 'Failed to connect wallet'
+      );
+    }
+  }
+
+  /**
+   * Authenticate with the backend using wallet signature
+   */
+  public async authenticate(account: string): Promise<AuthResponse> {
+    try {
+      // Get nonce from backend
+      const nonceResponse: AxiosResponse<NonceResponse> = await api.get(
+        `/api/auth/nonce/${account}/`
+      );
+      
+      const { message, nonce } = nonceResponse.data;
+      
+      // Sign the message with MetaMask
+      const signature: string = await window.ethereum.request({
+        method: 'personal_sign',
+        params: [message, account]
+      });
+      
+      // Verify signature and get token
+      const authResponse: AxiosResponse<AuthResponse> = await api.post(
+        '/api/auth/authenticate/', 
+        {
+          wallet_address: account,
+          signature,
+          nonce
+        }
+      );
+      
+      // Set the authentication token for future requests
+      setAuthToken(authResponse.data.token);
+      
+      return authResponse.data;
+    } catch (error) {
+      console.error('Authentication error:', error);
+      const errorMessage = error instanceof AxiosError 
+        ? error.response?.data?.error || error.message
+        : 'Authentication failed';
+      
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * Check if profile exists or create one
+   */
+  public async checkOrCreateProfile(referrerWallet?: string): Promise<ProfileResponse> {
+    if (!this.account) {
+      throw new Error('No wallet connected. Connect wallet first.');
+    }
+    
+    try {
+      const response: AxiosResponse<ProfileResponse> = await api.post(
+        '/api/login/',
+        {
+          wallet_address: this.account,
+          referrer_wallet: referrerWallet
+        }
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error('Profile check/creation error:', error);
+      const errorMessage = error instanceof AxiosError 
+        ? error.response?.data?.error || error.message
+        : 'Failed to check/create profile';
+      
+      throw new Error(errorMessage);
+    }
+  }
+}
+
+// Example usage in a React component
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { WalletService } from './wallet-service';
+
+const walletService = new WalletService();
+
+const WalletConnect: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const connectWallet = async (): Promise<void> => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Connect wallet
+      const account = await walletService.connectWallet();
+      
+      // Authenticate
+      const authResponse = await walletService.authenticate(account);
+      
+      // Get referrer from URL if available
+      const params = new URLSearchParams(location.search);
+      const referrer = params.get('ref');
+      
+      // Check or create profile
+      const profileResponse = await walletService.checkOrCreateProfile(referrer || undefined);
+      
+      // Navigate based on profile status
+      if (profileResponse.current_level > 0) {
+        navigate('/user/dashboard');
+      } else {
+        navigate('/user/register');
+      }
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      {error && <div className="error">{error}</div>}
+      <button 
+        onClick={connectWallet} 
+        disabled={loading}
+      >
+        {loading ? 'Connecting...' : 'Connect Wallet'}
+      </button>
+    </div>
+  );
+};
+
+export default WalletConnect;

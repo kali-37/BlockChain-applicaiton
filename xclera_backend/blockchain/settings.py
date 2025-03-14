@@ -111,6 +111,7 @@ AUTH_EXEMPT_ROUTES = [
     "/api/auth/nonce/",
     "/api/auth/authenticate/",
     "/api/register/",
+    "/api/login/"
 ]
 # Session settings
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
