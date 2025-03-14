@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
@@ -5,9 +6,9 @@ from eth_account.messages import encode_defunct
 from web3 import Web3
 from web3.auto import w3
 import jwt
-import datetime
-
-from .models import UserProfile
+from datetime import timedelta
+import secrets
+from .models import RefreshToken, UserProfile
 
 
 class Web3Authentication(BaseAuthentication):
@@ -38,6 +39,9 @@ class Web3Authentication(BaseAuthentication):
         # Verify the JWT token
         try:
             payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
+            # Verify this is an access token, not a refresh token
+            if payload.get('type') != 'access':
+                raise AuthenticationFailed("Invalid token type")
             wallet_address = payload.get("wallet_address")
             print("PAYLOAD  ", payload)
         except Exception as e:
@@ -86,14 +90,48 @@ class Web3AuthBackend:
             return False
 
     @staticmethod
-    def generate_token(wallet_address):
+    def generate_tokens(wallet_address):
         """
-        Generate a JWT token for a wallet address
+        Generate both access and refresh tokens for a wallet address
         """
-        expiration = datetime.datetime.utcnow() + settings.JWT_EXPIRATION_DELTA
+        # Get user profile
+        try:
+            user = UserProfile.objects.get(wallet_address=wallet_address)
+        except UserProfile.DoesNotExist:
+            raise Exception("User not found")
 
-        payload = {"wallet_address": wallet_address, "exp": expiration}
+        # Generate access token (short-lived)
+        access_expiration = timezone.now() + timedelta(minutes=30)
+        access_payload = {
+            "wallet_address": wallet_address,
+            "exp": access_expiration,
+            "type": "access",
+            "jti": secrets.token_hex(8),
+        }
+        access_token = jwt.encode(
+            access_payload, settings.JWT_SECRET_KEY, algorithm="HS256"
+        ) 
 
-        token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
+        # Generate refresh token (longer-lived)
+        refresh_expiration = timezone.now() + timedelta(days=7)
+        refresh_payload = {
+            "wallet_address": wallet_address,
+            "exp": refresh_expiration,
+            "type": "refresh",
+            "jti": secrets.token_hex(8),
+        }
+        refresh_token = jwt.encode(
+            refresh_payload, settings.JWT_SECRET_KEY, algorithm="HS256"
+        )
 
-        return token, expiration
+        # Store refresh token in database
+        RefreshToken.objects.create(
+            user=user, token=refresh_token, expires_at=refresh_expiration
+        )
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "access_expires_at": access_expiration,
+            "refresh_expires_at": refresh_expiration,
+        }

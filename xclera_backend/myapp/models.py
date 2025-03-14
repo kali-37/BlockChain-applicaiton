@@ -121,3 +121,18 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+class RefreshToken(models.Model):
+    """Stores refresh tokens for JWT authentication"""
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='refresh_tokens')
+    token = models.CharField(max_length=255, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    
+    def __str__(self):
+        return f"Token for {self.user} ({self.is_active})"
+    
+    @property
+    def is_valid(self):
+        return self.is_active and self.expires_at > timezone.now()

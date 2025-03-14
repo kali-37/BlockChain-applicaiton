@@ -4,7 +4,7 @@ from .views import (
     UserProfileViewSet, LevelViewSet, TransactionViewSet,
     RegistrationView, UpgradeLevelView, LoginView
 )
-from .auth_views import NonceView, AuthenticateView, VerifyTokenView
+from .auth_views import NonceView, AuthenticateView, VerifyTokenView,RefreshTokenView
 
 router = DefaultRouter()
 router.register(r'profiles', UserProfileViewSet)
@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/auth/nonce/<str:wallet_address>/', NonceView.as_view(), name='auth-nonce'),
     path('api/auth/authenticate/', AuthenticateView.as_view(), name='auth-authenticate'),
     path('api/auth/verify/', VerifyTokenView.as_view(), name='auth-verify'),
+    path('api/auth/refresh/', RefreshTokenView.as_view(), name='auth-refresh'),
 ]
