@@ -1,34 +1,61 @@
-# Xclera Matrix Marketing System - API Documentation
+# Xclera Matrix Marketing System - Developer Guide
 
-## Introduction
+## API Implementation
 
-The Xclera Matrix Marketing System API provides endpoints for interacting with the blockchain-backed MLM platform. This document outlines the API implementation details, request/response formats, and transaction flows for developers.
+This guide details the API endpoints, request/response formats, and implementation details for developers working with the Xclera Matrix Marketing System.
 
-The API follows a RESTful architecture and supports a two-phase transaction model for all blockchain interactions to ensure security and user control.
+### Core API Concepts
 
-## Base URL
+#### Authentication Flow
 
-```
-http://localhost:8000/api/
-```
+The system uses a secure wallet-based authentication flow:
 
-## Authentication
+1. User connects their blockchain wallet (MetaMask, etc.)
+2. Backend issues a nonce for the wallet to sign
+3. User signs the nonce with their wallet
+4. Backend verifies the signature and issues JWT tokens
+5. Subsequent API calls use these tokens for authentication
 
-The API uses JWT-based authentication with wallet signatures for secure access.
+#### User Progression Flow
 
-### Authentication Flow
+1. **Level 0**: Initial account creation (via `/login/`)
+   - Profile created with referrer relationship
+   - Referral tree structure established
+   - No blockchain registration yet
 
-1. Request a nonce
-2. Sign the nonce with a wallet
-3. Submit the signature to obtain JWT tokens
-4. Use the access token for authenticated requests
+2. **Level 1**: On-chain registration (via `/register/`)
+   - Requires completed profile (username, country, phone)
+   - Two-phase transaction process
+   - 115 USDT fee (100 USDT to referrer, 15 USDT service fee)
 
-### Endpoints
+3. **Level 2+**: Level upgrades (via `/upgrade/`)
+   - Requires meeting level-specific requirements
+   - Two-phase transaction process
+   - Fee increases by 50 USDT per level
 
-#### 1. Get Nonce
+#### Two-Phase Transaction Model
+
+All blockchain interactions follow a two-phase transaction model:
+
+1. **Phase 1: Transaction Preparation**
+   - Request transaction data (unsigned)
+   - Backend validates eligibility and prepares transaction parameters
+   - No blockchain interaction or payment happens yet
+
+2. **Phase 2: Transaction Execution**
+   - Frontend gets the user to sign the transaction
+   - Signed transaction is submitted back to backend
+   - Backend broadcasts the transaction to the blockchain
+   - Transaction is executed and payment is processed
+
+### API Endpoints
+
+#### Authentication
+
+##### 1. Get Nonce for Authentication
 
 ```http
-GET /auth/nonce/{wallet_address}/
+GET /api/auth/nonce/{wallet_address}/
 ```
 
 **Response:**
@@ -40,10 +67,10 @@ GET /auth/nonce/{wallet_address}/
 }
 ```
 
-#### 2. Authenticate with Signed Message
+##### 2. Authenticate with Signed Message
 
 ```http
-POST /auth/authenticate/
+POST /api/auth/authenticate/
 Content-Type: application/json
 
 {
@@ -66,10 +93,10 @@ Content-Type: application/json
 }
 ```
 
-#### 3. Refresh Token
+##### 3. Refresh Token
 
 ```http
-POST /auth/refresh/
+POST /api/auth/refresh/
 Content-Type: application/json
 
 {
@@ -87,32 +114,14 @@ Content-Type: application/json
 }
 ```
 
-#### 4. Verify Token
+#### User Management
+
+##### 1. Login/Create Level 0 Account
+
+This endpoint either retrieves an existing user's profile or creates a new Level 0 account. When creating a new account, it also establishes all referral relationships in the database.
 
 ```http
-GET /auth/verify/
-Authorization: Bearer {access_token}
-```
-
-**Response:**
-
-```json
-{
-    "wallet_address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    "username": "username",
-    "current_level": 1,
-    "is_profile_complete": true
-}
-```
-
-## User Management
-
-### Login (Check/Create Wallet Profile)
-
-This endpoint checks if a wallet exists in the system. If not, it creates a Level 0 profile.
-
-```http
-POST /login/
+POST /api/login/
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
@@ -129,7 +138,7 @@ Content-Type: application/json
     "message": "Profile found",
     "wallet_address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     "username": "username",
-    "current_level": level-of-user,
+    "current_level": 1,
     "is_profile_complete": true,
     "is_registered_on_chain": true
 }
@@ -147,38 +156,15 @@ Content-Type: application/json
 }
 ```
 
-### Get User Profile
+##### 2. Get/Update User Profile
 
 ```http
-GET /profiles/by_wallet/?address=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+GET /api/profiles/by_wallet/?address=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 Authorization: Bearer {access_token}
 ```
 
-**Response:**
-
-```json
-{
-    "id": 123,
-    "username": "username",
-    "country": "United States",
-    "phone_number": "+1234567890",
-    "email": "user@example.com",
-    "wallet_address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    "referrer": 1,
-    "referrer_username": "root_user",
-    "current_level": 1,
-    "direct_referrals_count": 3,
-    "max_referral_depth": 2,
-    "is_registered_on_chain": true,
-    "date_registered": "2025-03-01T12:00:00.000000",
-    "is_profile_complete": true
-}
-```
-
-### Update User Profile
-
 ```http
-PATCH /profiles/{id}/
+PATCH /api/profiles/{id}/
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
@@ -190,101 +176,21 @@ Content-Type: application/json
 }
 ```
 
-**Response:**
+#### Blockchain Operations
 
-```json
-{
-    "username": "new_username",
-    "country": "Canada",
-    "phone_number": "+1987654321",
-    "email": "new_email@example.com"
-}
-```
+##### 1. Registration (Level 0 to Level 1)
 
-### Get User's Direct Referrals
+This endpoint handles the upgrade from Level 0 to Level 1, which requires a blockchain transaction.
+
+###### Phase 1: Prepare Registration Transaction
 
 ```http
-GET /profiles/{id}/referrals/
+POST /api/register/
 Authorization: Bearer {access_token}
-```
-
-### Get User's Transactions
-
-```http
-GET /profiles/{id}/transactions/
-Authorization: Bearer {access_token}
-```
-
-### Get User's Uplines
-
-```http
-GET /profiles/{id}/uplines/
-Authorization: Bearer {access_token}
-```
-
-### Get User's Downlines
-
-```http
-GET /profiles/{id}/downlines/
-Authorization: Bearer {access_token}
-```
-
-## Level Management
-
-### Get All Levels
-
-```http
-GET /levels/
-Authorization: Bearer {access_token}
-```
-
-**Response:**
-
-```json
-[
-    {
-        "level_number": 1,
-        "price": 100.00,
-        "min_direct_referrals": 0,
-        "min_referral_depth": 0
-    },
-    {
-        "level_number": 2,
-        "price": 150.00,
-        "min_direct_referrals": 3,
-        "min_referral_depth": 0
-    },
-    {
-        "level_number": 3,
-        "price": 200.00,
-        "min_direct_referrals": 0,
-        "min_referral_depth": 2
-    }
-    // Additional levels...
-]
-```
-
-## Blockchain Transactions
-
-All blockchain operations follow a two-phase transaction model:
-
-1. Phase 1: Request transaction data (unsigned)
-2. Phase 2: Submit signed transaction
-
-### Registration (Two-Phase)
-
-#### Phase 1: Prepare Registration Transaction
-
-```http
-POST /register/
 Content-Type: application/json
 
 {
-  "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-  "referrer_wallet": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "username": "new_user",
-  "country": "Germany",
-  "phone_number": "+4912345678"
+  "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
 }
 ```
 
@@ -307,18 +213,15 @@ Content-Type: application/json
 }
 ```
 
-#### Phase 2: Submit Signed Registration Transaction
+###### Phase 2: Submit Signed Registration Transaction
 
 ```http
-POST /register/
+POST /api/register/
+Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
   "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-  "referrer_wallet": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "username": "new_user",
-  "country": "Germany",
-  "phone_number": "+4912345678",
   "signed_transaction": "0x..."
 }
 ```
@@ -330,18 +233,18 @@ Content-Type: application/json
     "message": "Registration successful",
     "profile_id": 123,
     "transaction_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-    "is_profile_complete": true
+    "current_level": 1
 }
 ```
 
-### Level Upgrade (Two-Phase)
+##### 2. Level Upgrade
 
-This endpoint automatically increments the user's level by 1.
+This endpoint automatically increments the user's level (e.g., Level 1 to Level 2, Level 2 to Level 3, etc.).
 
-#### Phase 1: Prepare Upgrade Transaction
+###### Phase 1: Prepare Upgrade Transaction
 
 ```http
-POST /upgrade/
+POST /api/upgrade/
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
@@ -369,10 +272,10 @@ Content-Type: application/json
 }
 ```
 
-#### Phase 2: Submit Signed Upgrade Transaction
+###### Phase 2: Submit Signed Upgrade Transaction
 
 ```http
-POST /upgrade/
+POST /api/upgrade/
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
@@ -394,83 +297,108 @@ Content-Type: application/json
 }
 ```
 
-## Transactions History
+#### Data Queries
 
-### Get Transaction History
+##### 1. Get User's Direct Referrals
 
 ```http
-GET /transactions/?wallet_address=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+GET /api/profiles/{id}/referrals/
 Authorization: Bearer {access_token}
 ```
 
-**Response:**
+##### 2. Get User's Transactions
 
-```json
-[
-    {
-        "id": 1,
-        "user": 123,
-        "user_username": "username",
-        "transaction_type": "REGISTRATION",
-        "amount": 115.000000,
-        "level": 1,
-        "recipient": 1,
-        "recipient_username": "Root User",
-        "transaction_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-        "status": "CONFIRMED",
-        "created_at": "2025-03-01T12:00:00.000000",
-        "updated_at": "2025-03-01T12:00:00.000000"
-    },
-    {
-        "id": 2,
-        "user": 123,
-        "user_username": "username",
-        "transaction_type": "UPGRADE",
-        "amount": 150.000000,
-        "level": 2,
-        "recipient": null,
-        "recipient_username": null,
-        "transaction_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-        "status": "CONFIRMED",
-        "created_at": "2025-03-02T12:00:00.000000",
-        "updated_at": "2025-03-02T12:00:00.000000"
-    }
-]
+```http
+GET /api/profiles/{id}/transactions/
+Authorization: Bearer {access_token}
 ```
 
-## Important Notes
+##### 3. Get User's Uplines/Downlines
 
-### Two-Phase Transaction Model
+```http
+GET /api/profiles/{id}/uplines/
+Authorization: Bearer {access_token}
+```
 
-All blockchain interactions follow a two-phase transaction model:
+```http
+GET /api/profiles/{id}/downlines/
+Authorization: Bearer {access_token}
+```
 
-1. **Phase 1: Transaction Preparation**
-   - Backend prepares transaction data and returns it to the frontend
-   - No blockchain transaction has occurred yet
-   - No funds have been transferred
+##### 4. Get Levels Information
 
-2. **Phase 2: Transaction Execution**
-   - Frontend gets the user to sign the transaction with their wallet
-   - Signed transaction is submitted back to the backend
-   - Backend submits the transaction to the blockchain
-   - Funds are transferred at this point
+```http
+GET /api/levels/
+Authorization: Bearer {access_token}
+```
 
-This approach ensures:
-- Users explicitly approve every transaction
-- Users maintain full control of their funds
-- Transparency in all blockchain operations
+### Implementation Details
 
-### Hex Values for Blockchain Transactions
+#### Authentication Implementation
 
-All numeric values in transaction objects are provided in hexadecimal format:
-- `value`: Transaction amount in wei (hex)
-- `gas`: Gas limit (hex)
-- `gasPrice`: Gas price in wei (hex)
-- `nonce`: Transaction nonce (hex)
+The system uses JWT (JSON Web Tokens) with wallet signatures:
+
+1. The server generates a random nonce for each authentication attempt
+2. The user signs this nonce with their private key
+3. The server verifies the signature and issues JWT tokens
+4. Access tokens expire in 30 minutes, refresh tokens in 7 days
+
+#### User Creation Flow
+
+1. **User connects wallet**: Frontend shows wallet connect options
+2. **User authenticates**: Wallet signs nonce to prove ownership
+3. **Account creation**:
+   - `/login/` endpoint creates a Level 0 profile
+   - Referral relationships are established in database
+4. **Profile completion**:
+   - User must provide username, country, phone
+   - This is required before registration on blockchain
+
+#### Registration Implementation
+
+The registration process (Level 0 to Level 1) involves:
+
+1. **Profile validation**:
+   - Check profile is complete
+   - Confirm user has a referrer
+   - Ensure user isn't already registered
+
+2. **Blockchain transaction**:
+   - Two-phase process (prepare → sign → submit)
+   - 115 USDT payment (100 USDT to referrer, 15 USDT service fee)
+   - Smart contract updates the user's on-chain status
+
+3. **Database updates**:
+   - User's level updated to 1
+   - is_registered_on_chain flag set to true
+   - Transaction record created
+
+#### Level Upgrade Implementation
+
+Level upgrades (Level 1 and beyond) involve:
+
+1. **Eligibility checks**:
+   - Level 2 requires 3 direct referrals
+   - Higher levels require referral depth matching level-1
+   - Profile must be complete
+   - Cannot skip levels
+
+2. **Upline determination**:
+   - System automatically finds eligible upline at the right position
+   - If no eligible upline, reward goes to company wallet
+
+3. **Blockchain transaction**:
+   - Two-phase process (prepare → sign → submit)
+   - Fee increases by 50 USDT per level (150 for Level 2, 200 for Level 3, etc.)
+   - 20% of fee goes to company wallet, 80% to eligible upline
+
+4. **Database updates**:
+   - User's level updated
+   - Transaction records created
 
 ### Error Handling
 
-Standard error responses:
+The API uses standard HTTP status codes and consistent error responses:
 
 ```json
 {
@@ -479,25 +407,52 @@ Standard error responses:
 }
 ```
 
-Common error codes:
-- `400`: Bad Request (invalid input)
-- `401`: Unauthorized (missing or invalid token)
-- `403`: Forbidden (insufficient permissions)
-- `404`: Not Found (resource doesn't exist)
-- `500`: Internal Server Error (server-side issue)
+Common error scenarios:
 
-## Level Requirements
+#### Registration Errors
 
-The system implements specific requirements for level upgrades:
+- **Profile Incomplete**:
+  ```json
+  {
+      "error": "Profile is incomplete",
+      "missing_fields": ["username", "country", "phone_number"]
+  }
+  ```
 
-1. **Level 1 Registration (100 USDT + 15 USDT service fee)**
-   - Requires username, country, and phone_number
+- **Already Registered**:
+  ```json
+  {
+      "error": "User is already registered on the blockchain"
+  }
+  ```
 
-2. **Level 2 Upgrade (150 USDT)**
-   - Requires at least 3 direct referrals
+#### Upgrade Errors
 
-3. **Level 3+ Upgrades**
-   - Price increases by 50 USDT per level
-   - Requires referral depth matching level-1
-   - Profile must be complete
-   - Cannot skip levels
+- **Insufficient Referrals**:
+  ```json
+  {
+      "error": "Need 3 direct referrals for Level 2"
+  }
+  ```
+
+- **Insufficient Depth**:
+  ```json
+  {
+      "error": "Insufficient referral depth, need depth of 4"
+  }
+  ```
+
+### Security Considerations
+
+1. **Authentication Security**:
+   - Only wallet owners can authorize actions
+   - JWT tokens have limited timeframes
+   - Refresh tokens can be revoked if needed
+
+2. **Authorization Control**:
+   - Users can only perform actions on their own wallet
+   - Each endpoint validates that the authorized user matches the requested wallet
+
+3. **Transaction Security**:
+   - Two-phase transaction model ensures user approval
+   - All

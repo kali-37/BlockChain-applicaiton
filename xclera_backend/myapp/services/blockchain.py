@@ -47,6 +47,37 @@ class BlockchainService:
         return self.contract.functions.getUserReferrer(wallet_address).call()
         
         
+    def build_register_transaction(self, user_wallet, referrer_wallet):
+        """
+        Build an unsigned transaction for user registration with USDT
+        
+        Returns transaction data that needs to be signed by the user's wallet
+        """
+        # Get constants from contract (in USDT)
+        level_1_price = 100  # 100 USDT
+        service_fee = 15     # 15 USDT
+        total_amount = level_1_price + service_fee
+        
+        # Convert wallet addresses to checksum format
+        user_wallet = self.w3.to_checksum_address(user_wallet)
+        referrer_wallet = self.w3.to_checksum_address(referrer_wallet)
+        
+        # Get the current nonce
+        nonce = self.w3.eth.get_transaction_count(user_wallet)
+        
+        # Build transaction with hex values
+        transaction = {
+            'from': user_wallet,
+            'to': self.contract_address,
+            'value': hex(self.w3.to_wei(total_amount, 'ether')),  # Convert to hex
+            'chainId': self.chain_id,
+            'gas': hex(2000000),  # Gas limit in hex
+            'gasPrice': hex(self.w3.eth.gas_price),  # Gas price in hex
+            'nonce': hex(nonce),  # Nonce in hex
+            'data': self.contract.encodeABI(fn_name='register', args=[referrer_wallet])
+        }
+        return transaction
+
     def build_upgrade_transaction(self, user_wallet, new_level, upline_wallet):
         """
         Build an unsigned transaction for level upgrade with USDT
