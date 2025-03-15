@@ -57,7 +57,6 @@ class LoginSerializer(serializers.Serializer):
             except UserProfile.DoesNotExist:
                 raise serializers.ValidationError("Referrer wallet address not found")
         return value
-
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating user profile information"""
 
@@ -66,30 +65,48 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         fields = ["username", "country", "phone_number", "email"]
 
     def validate(self, data):
-        """Ensure all required fields are provided for profile completion"""
-        # For partial updates, merge existing data with new data
+        """
+        Validate profile data to ensure required fields are provided,
+        especially for users who need to complete their profile for registration
+        """
+        instance = self.instance
+        current_level = instance.current_level if instance else 0
+        required_fields = ["username", "country", "phone_number"]
+        
+        # For partial updates, combine existing values with new values
         if self.partial:
-            instance = self.instance
-            # Check if this update would complete the profile
-            if any(
-                field not in data for field in ["username", "country", "phone_number"]
-            ):
-                # Only check fields that aren't being updated
-                for field in ["username", "country", "phone_number"]:
-                    if field not in data and not getattr(instance, field, None):
-                        # Don't require completion unless explicitly requested
-                        pass
+            # Identify which fields will be missing after the update
+            updated_data = {}
+            
+            # Start with existing values
+            for field in required_fields:
+                updated_data[field] = getattr(instance, field, None)
+                
+            # Add new values from the update
+            for field, value in data.items():
+                updated_data[field] = value
+                
+            # Check if any required fields will still be missing after update
+            missing_fields = [field for field in required_fields if not updated_data.get(field)]
+            
+            # For level 0 users trying to prepare for registration, enforce required fields
+            if current_level == 0 and missing_fields:
+                raise serializers.ValidationError({
+                    "error": "Profile incomplete",
+                    "missing_fields": missing_fields,
+                    "message": "These fields are required to complete your profile for registration"
+                })
+                
+        # For full updates, ensure all required fields are present
         else:
-            # For full updates, ensure all fields are present
-            missing_fields = []
-            for field in ["username", "country", "phone_number"]:
-                if not data.get(field):
-                    missing_fields.append(field)
-
+            missing_fields = [field for field in required_fields if not data.get(field)]
+            
             if missing_fields:
-                raise serializers.ValidationError(
-                    f"Fields {', '.join(missing_fields)} are required to complete profile."
-                )
+                raise serializers.ValidationError({
+                    "error": "Profile incomplete",
+                    "missing_fields": missing_fields,
+                    "message": "All required fields must be provided when updating your profile"
+                })
 
         return data
 
