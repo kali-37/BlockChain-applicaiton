@@ -11,8 +11,8 @@ from .serializers import (
     LevelSerializer,
     TransactionSerializer,
     ReferralRelationshipSerializer,
-    RegistrationSerializer,
-    UpgradeLevelSerializer,
+    # RegistrationSerializer,
+    # UpgradeLevelSerializer,
     ProfileUpdateSerializer,
 )
 from .services.blockchain import BlockchainService

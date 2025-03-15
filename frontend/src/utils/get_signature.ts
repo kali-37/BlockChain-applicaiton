@@ -1,12 +1,12 @@
 import Web3 from "web3";
-require("dotenv").config();
+// require("dotenv").config();
 
 /**
  * Signs a message with the private key from environment variables
  * @param {string} message - The message to sign
  * @returns {string} The hexadecimal signature
  */
-async function getSignature(message) {
+async function getSignature(message: string) {
     try {
         // Initialize Web3
         const web3 = new Web3();
