@@ -2,7 +2,7 @@ import { dummyData } from "../../../data/allRankDummyData";
 import ant from "../../../assets/img/ant.png";
 import { MdDone } from "react-icons/md";
 import { Link } from "react-router";
-import getLevels from "../../../services/user/levelup";
+import getLevels from "../../../services/user/getLevels";
 import { useEffect } from "react";
 
 function AllRanks() {
