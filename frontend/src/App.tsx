@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { initializeAuth } from "./utils/authenticator";
+// import { initializeAuth } from "./utils/authenticator";
 import Router from "./router/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 function App() {
     useEffect(() => {
         // Initialize authentication from stored tokens
-        initializeAuth();
+        // initializeAuth();
     }, []);
 
     return (
