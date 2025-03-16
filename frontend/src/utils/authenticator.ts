@@ -1,6 +1,11 @@
 import { api, setAuthToken, removeAuthTokens } from "./api";
 import { getAddress } from "ethers";
 
+declare global {
+    interface Window {
+        ethereum?: import("ethers").Eip1193Provider | undefined;
+    }
+}
 interface AuthTokens {
     access_token: string;
     refresh_token: string;
@@ -27,6 +32,9 @@ export const connectWallet = async (): Promise<string> => {
 
     try {
         // Request accounts
+        if (!window.ethereum) {
+            throw new Error("Ethereum provider is not available");
+        }
         const accounts = await window.ethereum.request({
             method: "eth_requestAccounts",
         });
@@ -53,6 +61,9 @@ export const authenticateWithWallet = async (
         const { message, nonce } = nonceResponse.data;
 
         // Request signature from MetaMask
+        if (!window.ethereum) {
+            throw new Error("Ethereum provider is not available");
+        }
         const signature = await window.ethereum.request({
             method: "personal_sign",
             params: [message, walletAddress],
@@ -129,4 +140,8 @@ export const initializeAuth = (): void => {
     if (token) {
         setAuthToken(token);
     }
+};
+
+export const getToken = function () {
+    return localStorage.getItem("access_token");
 };

@@ -1,7 +1,7 @@
-import axios from "axios";
+import { http } from "../../lib/http";
 
 async function getLevels() {
-    const response = await axios.get("http://192.168.100.8:8000/api/levels/");
+    const response = await http.get("/api/levels/");
     console.log(response);
 }
 

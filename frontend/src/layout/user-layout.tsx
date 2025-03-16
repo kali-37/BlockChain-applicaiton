@@ -1,9 +1,15 @@
+import { Navigate } from "react-router";
 import UserHeader from "../components/user/user-header";
+import { isAuthenticated } from "../utils/authenticator";
 
 interface UserLayoutProp {
     children: React.ReactNode;
 }
 function UserLayout({ children }: UserLayoutProp) {
+    if (!isAuthenticated()) {
+        return <Navigate to={`/`} />;
+    }
+
     return (
         <>
             <UserHeader />
