@@ -73,7 +73,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # JWT Settings
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_hex(32))
-print("JWT: ",JWT_SECRET_KEY)
 JWT_EXPIRATION_DELTA = timedelta(days=7)
 
 
@@ -112,6 +111,7 @@ AUTH_EXEMPT_ROUTES = [
     "/api/auth/nonce/",
     "/api/auth/authenticate/",
     "/api/register/",
+    "/api/login"
 ]
 # Session settings
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"

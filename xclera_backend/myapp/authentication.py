@@ -19,9 +19,7 @@ class Web3Authentication(BaseAuthentication):
 
     def authenticate(self, request):
         # Check if this route is exempt from authentication
-        print("AUTH attmp")
         if getattr(request, "auth_exempt", False):
-            print("exempt route though")
             return None
 
         # Get the Authorization header
@@ -41,7 +39,7 @@ class Web3Authentication(BaseAuthentication):
         # Verify the JWT token
         try:
             payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
-            # Verify this is an access token, not a refresh token
+        # Verify this is an access token, not a refresh token
             if payload.get('type') != 'access':
                 raise AuthenticationFailed("Invalid token type")
             wallet_address = payload.get("wallet_address")
