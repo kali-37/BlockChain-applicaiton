@@ -27,11 +27,9 @@ class LoginView(viewsets.ViewSet):
 
     @transaction.atomic
     def create(self, request):
-        print("EHRE ")
         serializer = LoginSerializer(data=request.data)
         # Print all data from serializer :
         if serializer.is_valid():
-            print("valid serializer")
             wallet_address = serializer.validated_data["wallet_address"]
 
             # Check if the wallet already exists as a profile
@@ -55,10 +53,8 @@ class LoginView(viewsets.ViewSet):
                 # New user - check for referrer
                 referrer_wallet = serializer.validated_data.get("referrer_wallet")
                 referrer_profile = None
-                print("REF wallet", referrer_wallet)
                 # if not referrer_wallet then return error for new users
                 if not referrer_wallet:
-                    print("EHRER ")
                     return Response(
                         data={
                             "error": "You need a referrer to join. Please enter a referrer wallet address."
@@ -68,13 +64,10 @@ class LoginView(viewsets.ViewSet):
 
                 # if referrer is provided, check if it exists in the database
                 try:
-                    print("payena ahisdfos f")
                     referrer_profile = UserProfile.objects.get(
                         wallet_address=referrer_wallet
                     )
-                    print(referrer_profile)
                 except UserProfile.DoesNotExist:
-                    print("payena ahisdfos f")
                     return Response(
                         {"error": "Referrer not found"},
                         status=status.HTTP_400_BAD_REQUEST,
@@ -98,12 +91,24 @@ class LoginView(viewsets.ViewSet):
                     # Build referral tree by adding all uplines at their respective levels
                     current_upline = referrer_profile
                     level = 2
+                    processed_uplines = set()
 
                     while current_upline and current_upline.referrer:
                         # Create relationship to this upline
-                        ReferralRelationship.objects.create(
-                            user=profile, upline=current_upline.referrer, level=level
-                        )
+                        if (
+                            current_upline.referrer.id in processed_uplines
+                            or current_upline.referrer.pk == profile.pk
+                        ):
+                            break
+                        processed_uplines.add(current_upline.referrer.id)
+                        if not ReferralRelationship.objects.filter(
+                            user=profile, upline=current_upline.referrer
+                        ).exists():
+                            ReferralRelationship.objects.create(
+                                user=profile,
+                                upline=current_upline.referrer,
+                                level=level,
+                            )
 
                         # Move up the tree
                         current_upline = current_upline.referrer
