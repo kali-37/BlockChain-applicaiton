@@ -6,11 +6,19 @@ export const api = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL || "http://127.0.0.1:8000",
 });
 
-// Set auth token in headers
+// export function api():object=>{
+//     if (localStorage.getItem(api)){
+//         localStorage.api;
+//     }
+// }
+
+// Set auth token in headersE
 export const setAuthToken = (token: string): void => {
+    console.log("setting api here ");
     if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
+    localStorage.setitem(api);
 };
 
 // Remove auth tokens from headers
@@ -24,8 +32,12 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // If error is 401 and we haven't tried refreshing yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        console.log(error);
+        if (
+            error.response?.status === 401 &&
+            error.response?.message.detail == "Invalid or expired token" &&
+            !originalRequest._retry
+        ) {
             originalRequest._retry = true;
 
             // Try to refresh the token

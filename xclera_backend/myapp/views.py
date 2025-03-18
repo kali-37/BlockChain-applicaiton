@@ -271,7 +271,7 @@ class RegistrationView(viewsets.ViewSet):
             # Check if profile is complete
             if not profile.is_profile_complete:
                 missing_fields = []
-                for field in ["username", "country", "phone_number"]:
+                for field in ["username", "phone_number","country"]:
                     if not getattr(profile, field):
                         missing_fields.append(field)
 
@@ -309,6 +309,7 @@ class RegistrationView(viewsets.ViewSet):
                         profile.is_registered_on_chain = True
                         profile.current_level = 1
                         profile.save()
+
 
                         # Create transaction record
                         Transaction.objects.create(

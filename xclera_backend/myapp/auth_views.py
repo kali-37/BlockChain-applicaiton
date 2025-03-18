@@ -162,7 +162,7 @@ class RefreshTokenView(APIView):
                 )
                 
                 # Generate a new access token
-                access_expiration = timezone.now() + timedelta(minutes=30)
+                access_expiration = timezone.now() + timedelta(minutes=1)
                 access_payload = {
                     "wallet_address": wallet_address,
                     "exp": access_expiration,

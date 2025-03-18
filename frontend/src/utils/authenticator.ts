@@ -113,6 +113,7 @@ export const refreshAccessToken = async (): Promise<boolean> => {
 
         localStorage.setItem("access_token", response.data.access_token);
         setAuthToken(response.data.access_token);
+
         return true;
     } catch (error) {
         console.error("Token refresh failed:", error);
@@ -131,7 +132,7 @@ export const logout = (): void => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("walletAddress");
-    removeAuthTokens();
+    // removeAuthTokens();
 };
 
 // Initialize auth from localStorage (call on app start)

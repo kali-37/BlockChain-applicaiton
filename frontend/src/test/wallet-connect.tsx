@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { GiFoxHead } from "react-icons/gi";
-import { useNavigate, useLocation, Route } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { connectWallet, authenticateWithWallet } from "../utils/authenticator";
 import { api } from "../utils/api";
 
@@ -19,59 +19,60 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
         setLoading(true);
         setError(null);
 
-    try {
-      // Connect to wallet
-      const walletAddress = await connectWallet();
-      setAccount(walletAddress);
-      console.log(walletAddress);
-      
+        try {
+            // Connect to wallet
+            const walletAddress = await connectWallet();
+            setAccount(walletAddress);
+            console.log(walletAddress);
 
-      // Check if we have a referrer from URL
-      const params = new URLSearchParams(location.search);
-      const referrer = params.get('ref');
+            // Check if we have a referrer from URL
+            const params = new URLSearchParams(location.search);
+            const referrer = params.get("ref");
 
-      console.log({wallet_address: walletAddress,referrer_wallet:referrer||undefined}) 
-      
-      // Create or fetch profile
-      const loginResponse = await api.post('/api/login/', {
-        wallet_address: walletAddress,
-        referrer_wallet: referrer || undefined
-      });
-      console.log("LOG RESPONSE",loginResponse.data) 
+            console.log({
+                wallet_address: walletAddress,
+                referrer_wallet: referrer || undefined,
+            });
 
-      // Authenticate with wallet signature
-      await authenticateWithWallet(walletAddress);
-      
-      
-      // Check if user is registered
-      const { current_level, is_registered_on_chain } = loginResponse.data;
-      setTimeout(() => {
-        onClose();
-        // Redirect based on user status
-        if (is_registered_on_chain && current_level > 0) {
-          navigate("/user/dashboard");
-        } else {
-          navigate("/user/profile");
+            // Create or fetch profile
+            const loginResponse = await api.post("/api/login/", {
+                wallet_address: walletAddress,
+                referrer_wallet: referrer || undefined,
+            });
+            console.log("LOG RESPONSE", loginResponse.data);
+
+            // Authenticate with wallet signature
+            await authenticateWithWallet(walletAddress);
+
+            // Check if user is registered
+            const { current_level, is_registered_on_chain } =
+                loginResponse.data;
+            setTimeout(() => {
+                onClose();
+                // Redirect based on user status
+                if (is_registered_on_chain && current_level > 0) {
+                    navigate("/user/dashboard");
+                } else {
+                    navigate("/user/profile");
+                }
+            }, 1000);
+        } catch (err: any) {
+            // Check if it's the missing referrer error
+            console.log(err.response);
+            if (err.response?.status === 400) {
+                const errorMessage = err.response?.data?.error;
+                if (typeof errorMessage === "object") {
+                    // Convert object of errors to a string if it's seraizlier error
+                    setError(Object.values(errorMessage).flat().join(", "));
+                } else {
+                    setError(errorMessage || "An error occurred during login");
+                }
+                setLoading(false);
+            }
+        } finally {
+            setLoading(false);
         }
-      }, 1000);
-      
-    } catch (err: any) {
-      // Check if it's the missing referrer error
-      console.log(err.response);
-      if (err.response?.status === 400) {
-        const errorMessage = err.response?.data?.error;
-        if (typeof errorMessage === 'object') {
-          // Convert object of errors to a string if it's seraizlier error
-          setError(Object.values(errorMessage).flat().join(', '));
-        } else {
-          setError(errorMessage || 'An error occurred during login');
-        }
-        setLoading(false);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
     return (
         <div className="border-[1px] border-gray-700 w-[400px] bg-black p-6 text-center rounded-3xl">
