@@ -18,7 +18,7 @@ export const setAuthToken = (token: string): void => {
     if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
-    localStorage.setitem(api);
+    // localStorage.setitem(api);
 };
 
 // Remove auth tokens from headers
