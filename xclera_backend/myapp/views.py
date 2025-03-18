@@ -210,7 +210,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 class LevelViewSet(viewsets.ReadOnlyModelViewSet):
     """API endpoint for viewing level information"""
-
     queryset = Level.objects.all().order_by("level_number")
     serializer_class = LevelSerializer
 

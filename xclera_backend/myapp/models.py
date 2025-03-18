@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from decimal import Decimal
 
 
 class UserProfile(models.Model):
@@ -57,7 +58,7 @@ class Level(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     min_direct_referrals = models.PositiveSmallIntegerField(default=0)
     min_referral_depth = models.PositiveSmallIntegerField(default=0)
-    rank_fee = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    rank_fee = models.DecimalField(max_digits=10, decimal_places=2,default=Decimal("0.0"))
 
     def __str__(self):
         return f"Level {self.level_number} - {self.price} USDT"
