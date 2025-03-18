@@ -110,7 +110,7 @@ APPEND_SLASH = False
 AUTH_EXEMPT_ROUTES = [
     "/api/auth/nonce/",
     "/api/auth/authenticate/",
-    "/api/login"
+    "/api/login",
 ]
 # Session settings
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"

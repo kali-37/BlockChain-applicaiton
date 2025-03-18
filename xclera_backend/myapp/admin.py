@@ -105,6 +105,7 @@ class LevelAdmin(ReadOnlyModelAdmin):
         "price",
         "min_direct_referrals",
         "min_referral_depth",
+        "rank_fee",
     )
     ordering = ("level_number",)
     search_fields = ("level_number",)

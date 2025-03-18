@@ -114,7 +114,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 class LevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Level
-        fields = ["level_number", "price", "min_direct_referrals", "min_referral_depth"]
+        fields = ["level_number", "price", "min_direct_referrals", "min_referral_depth", "rank_fee"]
 
 
 class TransactionSerializer(serializers.ModelSerializer):
