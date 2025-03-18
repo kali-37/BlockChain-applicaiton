@@ -3,6 +3,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useGetUserProfile } from "../../../services/user/use-get-user-profile";
 import { useUpdateUserProfile } from "../../../services/user/use-update-user-profile";
+import { useEffect } from "react";
 
 const schema = yup
     .object({
@@ -31,6 +32,7 @@ function ProfileData() {
         register,
         handleSubmit,
         formState: { errors },
+        setValue,
     } = useForm({
         resolver: yupResolver(schema),
     });
@@ -39,6 +41,15 @@ function ProfileData() {
         console.log(data);
         mutate(data);
     };
+
+    useEffect(() => {
+        if (data) {
+            setValue("username", data?.username || "");
+            setValue("email", data?.email || "");
+            setValue("country", data?.country || "");
+            setValue("phone_number", data?.phone_number || "");
+        }
+    }, [data, setValue]);
 
     return (
         <div>
@@ -80,7 +91,7 @@ function ProfileData() {
                     <input
                         {...register("username")}
                         className="outline-none text-gray-300 bg-black border-gray-400 border rounded-md px-2 py-1"
-                        defaultValue={data?.username || ""}
+                        // defaultValue={data?.username || ""}
                     />
                     {errors?.username ? (
                         <p className="text-red-500">
@@ -97,7 +108,7 @@ function ProfileData() {
                     <input
                         className="outline-none text-gray-300 bg-black border-gray-400 border rounded-md px-2 py-1"
                         {...register("email")}
-                        defaultValue={data?.email || ""}
+                        // defaultValue={data?.email || ""}
                     />
                     {errors?.email ? (
                         <p className="text-red-500">
@@ -114,7 +125,7 @@ function ProfileData() {
                     <input
                         className="outline-none text-gray-300 bg-black border-gray-400 border rounded-md px-2 py-1"
                         {...register("country")}
-                        defaultValue={data?.country || ""}
+                        // defaultValue={data?.country || ""}
                     />
                     {errors?.country ? (
                         <p className="text-red-500">
@@ -131,7 +142,7 @@ function ProfileData() {
                     <input
                         className="outline-none text-gray-300 bg-black border-gray-400 border rounded-md px-2 py-1"
                         {...register("phone_number")}
-                        defaultValue={data?.phone_number || ""}
+                        // defaultValue={data?.phone_number || ""}
                     />
                     {errors?.phone_number ? (
                         <p className="text-red-500">
