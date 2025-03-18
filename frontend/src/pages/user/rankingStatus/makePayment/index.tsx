@@ -5,6 +5,9 @@ import { useState } from "react";
 import { connectWallet } from "../../../../utils/authenticator";
 import { useSubmitSignedTransaction } from "../../../../services/user/payment/use-submit-signed-transaction";
 import { toast } from "react-toastify";
+import { useGetUserProfile } from "../../../../services/user/use-get-user-profile";
+import { usePrepareTransactionForRemainingLevels } from "../../../../services/user/payment/use-prepare-transaction-remaining-levels";
+import { useSubmitSignedTransactionRemainingLevels } from "../../../../services/user/payment/use-submit-signed-transactions-remaining-levels";
 
 interface INextLevel {
     level_number: number;
@@ -45,25 +48,38 @@ function PaymentLayout({ nextLevelInfo, currentLevel }: CurrentAndNextLevel) {
 }
 
 function MakePayment() {
-    const { mutateAsync } = usePrepareTransaction();
+    const { mutateAsync: prepareTransaction } = usePrepareTransaction();
     const { mutateAsync: submitTransaction } = useSubmitSignedTransaction();
+    const { mutateAsync: prepareTransactionRemainingLevels } =
+        usePrepareTransactionForRemainingLevels();
+    const { mutateAsync: submitTransactionRemainingLevels } =
+        useSubmitSignedTransactionRemainingLevels();
     const { currentLevel, nextLevelInfo } = useGetCurrentAndNextLevel();
-    const [account, setAccount] = useState<string>("");
+    const { data: userProfile } = useGetUserProfile();
     const [processing, setProcessing] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>();
+    const [error, setError] = useState<string | null>(null);
 
     async function handleTransaction() {
         try {
             setProcessing(true);
-            setError(null);
+            // setError(null);
             let transactionData = null;
+            let submitTransactionData = null;
 
-            // first phase for transaction
+            // =============first phase for transaction=====================
             const userWalletAddress = localStorage.getItem("walletAddress");
             if (userWalletAddress) {
-                transactionData = await mutateAsync({
-                    wallet_address: userWalletAddress,
-                });
+                // level 0 to level 1
+                if (userProfile?.current_level < 1) {
+                    transactionData = await prepareTransaction({
+                        wallet_address: userWalletAddress,
+                    });
+                } else {
+                    //  level 1 to above remaining levels
+                    transactionData = await prepareTransactionRemainingLevels({
+                        wallet_address: userWalletAddress,
+                    });
+                }
             } else {
                 throw "No wallet Address";
             }
@@ -73,11 +89,13 @@ function MakePayment() {
 
             // second phase for transaction .
             const walletAddress = await connectWallet();
-            setAccount(walletAddress);
             console.log("wallet ==> ", walletAddress);
 
             if (!walletAddress) {
                 setProcessing(false);
+                toast.error(
+                    "Failed to connect to your wallet . Try again letter"
+                );
                 return;
             }
 
@@ -89,25 +107,37 @@ function MakePayment() {
                         to: transactionData?.data?.transaction?.to, // Address of the recipient. Not used in contract creation transactions.
                         value: transactionData?.data?.transaction?.value, // Value transferred, in wei. Only required to send ether to the recipient from the initiating external account.
                         gasLimit: transactionData?.data?.transaction?.gasPrice, // Customizable by the user during MetaMask confirmation.
-                        // maxPriorityFeePerGas: "0x3b9aca00", // Customizable by the user during MetaMask confirmation.
-                        // maxFeePerGas: "0x2540be400", // Customizable by the user during MetaMask confirmation.
                     },
                 ],
             });
+
             console.log("transaction detail==>", transaction_hash);
             console.log({
                 wallet_address: userWalletAddress,
                 signed_transaction: transaction_hash,
             });
-            const submitTransactionData = await submitTransaction({
-                wallet_address: userWalletAddress,
-                transaction_hash: transaction_hash,
-            });
-            console.log(submitTransactionData);
+
+            // level 0 to level 1
+            if (userProfile?.current_level < 1) {
+                submitTransactionData = await submitTransaction({
+                    wallet_address: userWalletAddress,
+                    transaction_hash: transaction_hash,
+                });
+                console.log(submitTransactionData);
+            } else {
+                //  level 1 to above remaining levels
+                submitTransactionData = await submitTransactionRemainingLevels({
+                    wallet_address: userWalletAddress,
+                    transaction_hash: transaction_hash,
+                });
+            }
         } catch (error) {
             console.log(error);
+            console.log(error?.response?.data?.error);
+            setError(error?.response?.data?.error);
             toast.error(
-                "Failed to complete transaction. Please try again later"
+                error?.response?.data?.error ||
+                    "Failed to complete transaction. Please try again later"
             );
         } finally {
             setProcessing(false);
@@ -141,6 +171,14 @@ function MakePayment() {
                         Back
                     </Link>
                 </div>
+                {error ? (
+                    <div className="font-bold text-lg text-red-700">
+                        <span>NOTE : </span>
+                        <span>{error}</span>
+                    </div>
+                ) : (
+                    ""
+                )}
             </div>
         </>
     );
