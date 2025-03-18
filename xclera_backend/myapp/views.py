@@ -210,6 +210,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 class LevelViewSet(viewsets.ReadOnlyModelViewSet):
     """API endpoint for viewing level information"""
+
     queryset = Level.objects.all().order_by("level_number")
     serializer_class = LevelSerializer
 
@@ -263,14 +264,14 @@ class RegistrationView(viewsets.ViewSet):
             # Check if user is already registered
             if profile.is_registered_on_chain or profile.current_level > 0:
                 return Response(
-                    {"error": "User is already registered on the blockchain"},
+                    {"error": f"User is already registered and already at level {profile.current_level}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             # Check if profile is complete
             if not profile.is_profile_complete:
                 missing_fields = []
-                for field in ["username", "phone_number","country"]:
+                for field in ["username", "phone_number", "country"]:
                     if not getattr(profile, field):
                         missing_fields.append(field)
 
@@ -291,16 +292,19 @@ class RegistrationView(viewsets.ViewSet):
                 )
 
             # Check the registration mode
-            # If signed_transaction is provided, process a completed registration
-            if "signed_transaction" in request.data:
+            # If  tx_hahs is provided, process a completed registration
+            if "transaction_hash" in request.data:
+                print("HERE we are in signed transaction", request.data)
+
                 try:
                     # Initialize blockchain service
                     blockchain_service = BlockchainService()
 
                     # Submit the signed transaction
-                    tx_result = blockchain_service.submit_transaction(
-                        request.data["signed_transaction"]
+                    tx_result = blockchain_service.verify_transaction(
+                        request.data["transaction_hash"]
                     )
+                    print(tx_result)
 
                     if tx_result["status"] == "success":
                         # Just update the user's status - no need to modify relationships
@@ -309,7 +313,6 @@ class RegistrationView(viewsets.ViewSet):
                         profile.current_level = 1
                         profile.save()
 
-
                         # Create transaction record
                         Transaction.objects.create(
                             user=profile,
@@ -317,7 +320,7 @@ class RegistrationView(viewsets.ViewSet):
                             amount=115,  # 100 USDT level fee + 15 USDT service fee
                             level=1,
                             recipient=referrer_profile,
-                            transaction_hash=tx_result["tx_hash"],
+                            transaction_hash=tx_result["transaction_hash"],
                             status="CONFIRMED",
                         )
 
@@ -325,7 +328,7 @@ class RegistrationView(viewsets.ViewSet):
                             {
                                 "message": "Registration successful",
                                 "profile_id": profile.pk,
-                                "transaction_hash": tx_result["tx_hash"],
+                                "transaction_hash": tx_result["transaction_hash"],
                                 "current_level": profile.current_level,
                             },
                             status=status.HTTP_201_CREATED,
@@ -428,15 +431,15 @@ class UpgradeLevelView(viewsets.ViewSet):
             )
 
             # Check the upgrade mode
-            # If signed_transaction is provided, process a completed upgrade
-            if "signed_transaction" in request.data:
+            # If transaction_hash  is provided, process a completed upgrade
+            if "transaction_hash" in request.data:
                 try:
                     # Initialize blockchain service
                     blockchain_service = BlockchainService()
 
                     # Submit the signed transaction
-                    tx_result = blockchain_service.submit_transaction(
-                        request.data["signed_transaction"]
+                    tx_result = blockchain_service.verify_transaction(
+                        request.data["transaction_hash"]
                     )
 
                     if tx_result["status"] == "success":
@@ -445,14 +448,14 @@ class UpgradeLevelView(viewsets.ViewSet):
                         upgrade_result = ReferralService.upgrade_user_level(
                             profile=profile,
                             target_level=target_level,
-                            transaction_hash=tx_result["tx_hash"],
+                            transaction_hash=tx_result["transaction_hash"],
                         )
 
                         return Response(
                             {
                                 "message": "Level upgrade successful",
                                 "new_level": target_level,
-                                "transaction_hash": tx_result["tx_hash"],
+                                "transaction_hash": tx_result["transaction_hash"],
                                 "upline_rewarded": upgrade_result["upline_rewarded"],
                                 "upline_reward": float(upgrade_result["upline_reward"]),
                             },

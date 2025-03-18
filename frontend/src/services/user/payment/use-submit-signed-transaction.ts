@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 
 interface IHandleTransactionData {
     wallet_address: string;
-    signed_transaction: string;
+    transaction_hash : string;
 }
 
 async function sendTransactionResult(data: IHandleTransactionData) {

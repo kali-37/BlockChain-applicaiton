@@ -132,3 +132,29 @@ class BlockchainService:
             'status': 'success' if tx_receipt["status"] == 1 else 'failed',
             'block_number': tx_receipt["blockNumber"]
         }
+
+    def verify_transaction(self, transaction_hash):
+        """Verify transaction using the hash"""
+        try:
+            # Get transaction receipt
+            receipt = self.w3.eth.get_transaction_receipt(transaction_hash)
+            
+            # Check if transaction was successful
+            if receipt and receipt['status'] == 1:
+                return {
+                    'status': 'success',
+                    'transaction_hash': transaction_hash,
+                    'block_number': receipt['blockNumber']
+                }
+            else:
+                return {
+                    'status': 'failed',
+                    'transaction_hash': transaction_hash,
+                    'error': 'Transaction failed or not found'
+                }
+        except Exception as e:
+            print(f"Error verifying transaction: {e}")
+            return {
+                'status': 'failed',
+                'error': str(e)
+            }

@@ -100,7 +100,7 @@ function MakePayment() {
             });
             const submitTransactionData = await submitTransaction({
                 wallet_address: userWalletAddress,
-                signed_transaction: response,
+                transaction_hash: response,
             });
             console.log(submitTransactionData);
         } catch (error) {

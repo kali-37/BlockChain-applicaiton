@@ -9,6 +9,15 @@ class Command(BaseCommand):
         
         # Clear existing levels
         Level.objects.all().delete()
+
+        # Create level 0
+        Level.objects.create(
+            level_number=0,
+            price=0,
+            rank_fee=0,
+            min_direct_referrals=0,
+            min_referral_depth=0
+        )
         
         # Create level 1
         Level.objects.create(

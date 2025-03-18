@@ -35,7 +35,6 @@ class Web3Authentication(BaseAuthentication):
         except ValueError:
             return None
 
-        print(f"{settings.JWT_SECRET_KEY},  {token}")
         # Verify the JWT token
         try:
             payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
@@ -43,7 +42,6 @@ class Web3Authentication(BaseAuthentication):
             if payload.get("type") != "access":
                 raise AuthenticationFailed("Invalid token type")
             wallet_address = payload.get("wallet_address")
-            print("PAYLOAD  ", payload)
         except Exception as e:
             raise AuthenticationFailed(f"Invalid or expired token")
 
