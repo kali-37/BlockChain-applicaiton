@@ -1,4 +1,8 @@
+import { useGetUserProfile } from "../../../services/user/use-get-user-profile";
+
 function CurrentRank() {
+    const { data } = useGetUserProfile();
+    console.log("data ==> ", data);
     return (
         <>
             <div>
@@ -7,7 +11,9 @@ function CurrentRank() {
                 </h2>
                 <div className="bg-container flex flex-col mt-4 py-8">
                     <p className="text-sm">My Current Rank</p>
-                    <span className="text-xl font-semibold">Level 0</span>
+                    <span className="text-xl font-semibold">
+                        Level {data?.current_level}
+                    </span>
                 </div>
             </div>
         </>

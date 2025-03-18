@@ -33,7 +33,6 @@ function App() {
                 rtl={false}
                 pauseOnFocusLoss
                 draggable
-                pauseOnHover
             />
         </>
     );

@@ -21,9 +21,8 @@ export const useGetCurrentAndNextLevel = () => {
     console.log(nextLevelInfo);
 
     useEffect(() => {
-        const userLevel = Number(localStorage.getItem("current_level"));
-        setCurrentLevel(userLevel);
-    }, []);
+        setCurrentLevel(userProfile?.current_level);
+    }, [userProfile?.current_level]);
 
     return { levels, currentLevel, nextLevelInfo };
 };

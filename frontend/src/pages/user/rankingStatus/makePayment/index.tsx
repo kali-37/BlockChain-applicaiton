@@ -1,16 +1,17 @@
 import { Link } from "react-router";
 import { useGetCurrentAndNextLevel } from "../../../../hooks/useGetCurrentNextLevel";
 import { usePrepareTransaction } from "../../../../services/user/payment/use-prepare-transaction";
-import { toast } from "react-toastify";
 import { useState } from "react";
 import { connectWallet } from "../../../../utils/authenticator";
 import { useSubmitSignedTransaction } from "../../../../services/user/payment/use-submit-signed-transaction";
+import { toast } from "react-toastify";
 
 interface INextLevel {
     level_number: number;
     price: string;
     min_direct_referrals: number;
     min_referral_depth: number;
+    rank_fee: string;
 }
 interface CurrentAndNextLevel {
     currentLevel: number;
@@ -36,7 +37,7 @@ function PaymentLayout({ nextLevelInfo, currentLevel }: CurrentAndNextLevel) {
                 </div>
                 <div className="flex justify-between items-center">
                     <p>Rank Fee</p>
-                    <p>20 USDT</p>
+                    <p>{nextLevelInfo?.rank_fee} USDT</p>
                 </div>
             </div>
         </>
@@ -100,15 +101,16 @@ function MakePayment() {
             });
             const submitTransactionData = await submitTransaction({
                 wallet_address: userWalletAddress,
-<<<<<<< Updated upstream
-                transaction_hash: response,
-=======
                 transaction_hash: transaction_hash,
->>>>>>> Stashed changes
             });
             console.log(submitTransactionData);
         } catch (error) {
             console.log(error);
+            toast.error(
+                "Failed to complete transaction. Please try again later"
+            );
+        } finally {
+            setProcessing(false);
         }
     }
     return (
@@ -130,7 +132,7 @@ function MakePayment() {
                         className="bg-container text-center m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950"
                         onClick={handleTransaction}
                     >
-                        Approve
+                        {processing ? "Processing Payment" : "Approve"}
                     </a>
                     <Link
                         to={`/user/rank-status`}
