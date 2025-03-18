@@ -14,6 +14,7 @@ class Command(BaseCommand):
         Level.objects.create(
             level_number=1,
             price=100,
+            rank_fee=20,
             min_direct_referrals=0,
             min_referral_depth=0
         )
@@ -21,6 +22,7 @@ class Command(BaseCommand):
         # Create level 2 (requires 3 direct referrals)
         Level.objects.create(
             level_number=2,
+            rank_fee=0,
             price=150,
             min_direct_referrals=3,
             min_referral_depth=0
@@ -30,6 +32,7 @@ class Command(BaseCommand):
         for i in range(3, 20):
             Level.objects.create(
                 level_number=i,
+                rank_fee=0,
                 price=50 + (i * 50),
                 min_direct_referrals=0,
                 min_referral_depth=i - 1

@@ -39,8 +39,8 @@ class Web3Authentication(BaseAuthentication):
         # Verify the JWT token
         try:
             payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
-        # Verify this is an access token, not a refresh token
-            if payload.get('type') != 'access':
+            # Verify this is an access token, not a refresh token
+            if payload.get("type") != "access":
                 raise AuthenticationFailed("Invalid token type")
             wallet_address = payload.get("wallet_address")
             print("PAYLOAD  ", payload)
@@ -101,7 +101,7 @@ class Web3AuthBackend:
             raise Exception("User not found")
 
         # Generate access token (short-lived)
-        access_expiration = timezone.now() + timedelta(minutes=30)
+        access_expiration = timezone.now() + timedelta(minutes=1)
         access_payload = {
             "wallet_address": wallet_address,
             "exp": access_expiration,
@@ -110,7 +110,7 @@ class Web3AuthBackend:
         }
         access_token = jwt.encode(
             access_payload, settings.JWT_SECRET_KEY, algorithm="HS256"
-        ) 
+        )
 
         # Generate refresh token (longer-lived)
         refresh_expiration = timezone.now() + timedelta(days=7)
