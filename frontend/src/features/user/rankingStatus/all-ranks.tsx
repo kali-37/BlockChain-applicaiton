@@ -4,6 +4,8 @@ import { Link } from "react-router";
 
 import { useGetCurrentAndNextLevel } from "../../../hooks/useGetCurrentNextLevel";
 import { useGetUserProfile } from "../../../services/user/use-get-user-profile";
+import ProfileData from "../../../pages/user/profile/profile-data";
+import { toast } from "react-toastify";
 
 interface Level {
     level_number: number;
@@ -83,8 +85,17 @@ function AllRanks() {
                     </button>
                 ) : (
                     <Link
-                        to={`/user/make-payment`}
+                        to={`${
+                            userProfile?.is_profile_complete
+                                ? "/user/make-payment"
+                                : ""
+                        }`}
                         className="bg-container text-center m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950"
+                        onClick={() => {
+                            if (!userProfile?.is_profile_complete) {
+                                toast.error("Competer your profile first");
+                            }
+                        }}
                     >
                         Upgrade
                     </Link>

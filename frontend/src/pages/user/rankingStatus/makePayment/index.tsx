@@ -162,7 +162,7 @@ function MakePayment() {
                         className="bg-container text-center m-auto md:px-32 py-4 md:p-6 w-full hover:bg-blue-950"
                         onClick={handleTransaction}
                     >
-                        {processing ? "Processing Payment" : "Approve"}
+                        {processing ? "Processing....." : "Approve"}
                     </a>
                     <Link
                         to={`/user/rank-status`}

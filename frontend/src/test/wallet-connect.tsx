@@ -78,13 +78,11 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
         <div className="border-[1px] border-gray-700 w-[400px] bg-black p-6 text-center rounded-3xl">
             <h2 className="text-2xl font-bold mb-6">Connect Wallet</h2>
 
-            {error && (
+            {error ? (
                 <div className="bg-red-500 bg-opacity-20 text-red-500 p-3 rounded-lg mb-4">
                     {error}
                 </div>
-            )}
-
-            {account ? (
+            ) : account ? (
                 <div className="space-y-4">
                     <p className="text-green-500">✓ Wallet Connected</p>
                     <p className="text-sm text-gray-400">

@@ -3,6 +3,8 @@ python setup.py
 npx hardhat node
 python xclera_backend/manage.py runserver
 
+referrer link ==> http://localhost:5173/?ref=0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
 // types.ts
 interface NonceResponse {
   message: string;
