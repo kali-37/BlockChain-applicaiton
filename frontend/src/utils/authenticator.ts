@@ -81,9 +81,12 @@ export const authenticateWithWallet = async (
         console.log(authResponse);
 
         // Store tokens
-        const { access_token, refresh_token } = authResponse.data;
+        const { access_token, refresh_token, access_expires_at } =
+            authResponse.data;
         localStorage.setItem("access_token", access_token);
         localStorage.setItem("refresh_token", refresh_token);
+        localStorage.setItem("refresh_token", refresh_token);
+        localStorage.setItem("access_expires_at", access_expires_at);
 
         // Set authorization header
         setAuthToken(access_token);
@@ -104,10 +107,7 @@ export const refreshAccessToken = async (): Promise<boolean> => {
     }
 
     try {
-        const response = await api.post<{
-            access_token: string;
-            expires_at: string;
-        }>("/api/auth/refresh/", {
+        const response = await api.post("/api/auth/refresh/", {
             refresh_token,
         });
 
@@ -132,7 +132,7 @@ export const logout = (): void => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("walletAddress");
-    // removeAuthTokens();
+    removeAuthTokens();
 };
 
 // Initialize auth from localStorage (call on app start)

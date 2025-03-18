@@ -17,8 +17,14 @@ export const setAuthToken = (token: string): void => {
     console.log("setting api here ");
     if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        localStorage.setItem("authToken", token);
+    } else {
+        // Remove token from headers if no token is provided
+        delete api.defaults.headers.common["Authorization"];
+
+        // Remove from localStorage as well
+        localStorage.removeItem("authToken");
     }
-    // localStorage.setitem(api);
 };
 
 // Remove auth tokens from headers
@@ -32,10 +38,10 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        console.log(error);
+        console.log(error?.response.data.detail);
         if (
             error.response?.status === 401 &&
-            error.response?.message.detail == "Invalid or expired token" &&
+            error.response?.data.detail == "Invalid or expired token" &&
             !originalRequest._retry
         ) {
             originalRequest._retry = true;

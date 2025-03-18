@@ -1,9 +1,7 @@
 import ant from "../../../assets/img/ant.png";
 import { MdDone } from "react-icons/md";
 import { Link } from "react-router";
-// import { useGetAllLevels } from "../../../services/user/use-getLevels";
-// import { useEffect, useState } from "react";
-// import { useGetUserProfile } from "../../../services/user/use-get-user-profile";
+
 import { useGetCurrentAndNextLevel } from "../../../hooks/useGetCurrentNextLevel";
 
 interface Level {
@@ -14,24 +12,8 @@ interface Level {
 }
 
 function AllRanks() {
-    // const { data: levels, isLoading, error } = useGetAllLevels();
-    // console.log(levels, isLoading, error);
-    // const [currentLevel, setCurrentLevel] = useState<number>(0);
-
-    // const { data: userProfile } = useGetUserProfile();
-    // console.log(userProfile);
-
-    // const nextLevelInfo = levels?.results.find(
-    //     (level: Level) => level.level_number === userProfile?.current_level + 1
-    // );
-    // console.log(nextLevelInfo);
-
-    // useEffect(() => {
-    //     console.log(typeof localStorage.getItem("current_level"));
-    //     const userLevel = Number(localStorage.getItem("current_level"));
-    //     setCurrentLevel(userLevel);
-    // }, []);
     const { levels, currentLevel, nextLevelInfo } = useGetCurrentAndNextLevel();
+    console.log("levels ==> ", levels);
     return (
         <>
             <div className="grid grid-cols-3 md:grid-cols-4 gap-4 p-4 ">

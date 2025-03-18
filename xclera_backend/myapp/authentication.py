@@ -101,7 +101,7 @@ class Web3AuthBackend:
             raise Exception("User not found")
 
         # Generate access token (short-lived)
-        access_expiration = timezone.now() + timedelta(minutes=1)
+        access_expiration = timezone.now() + timedelta(minutes=120)
         access_payload = {
             "wallet_address": wallet_address,
             "exp": access_expiration,

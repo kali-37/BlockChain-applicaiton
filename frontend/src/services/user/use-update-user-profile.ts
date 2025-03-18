@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../utils/api";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 
 interface IFormInput {
     username: string;
@@ -17,11 +18,13 @@ async function updateUserProfile(data: IFormInput) {
 
 export const useUpdateUserProfile = () => {
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     return useMutation({
         mutationFn: updateUserProfile,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+            navigate("/user/rank-status");
             toast.success("Your data is successfully updated ");
         },
     });

@@ -9,12 +9,16 @@ const schema = yup
         username: yup.string().required("User name is required"),
         email: yup.string().email().required("email is required"),
         // phoneNujmber: yup.number(),
+        country: yup.string().required("Country name is required"),
+        phone_number: yup.number().required("Your number is required"),
     })
-    .required();
+    .required("this field is required");
 
 interface IFormInput {
     username: string;
     email: string;
+    country: string;
+    phone_number: number;
 }
 
 function ProfileData() {
@@ -98,6 +102,40 @@ function ProfileData() {
                     {errors?.email ? (
                         <p className="text-red-500">
                             {String(errors?.email?.message)}
+                        </p>
+                    ) : (
+                        ""
+                    )}
+                </div>
+                <div className=" flex flex-col gap-2">
+                    <label className="text-gray-400 font-semibold" htmlFor="">
+                        Country Name<sup className="text-red-400">*</sup>
+                    </label>
+                    <input
+                        className="outline-none text-gray-300 bg-black border-gray-400 border rounded-md px-2 py-1"
+                        {...register("country")}
+                        defaultValue={data?.country || ""}
+                    />
+                    {errors?.country ? (
+                        <p className="text-red-500">
+                            {String(errors?.country?.message)}
+                        </p>
+                    ) : (
+                        ""
+                    )}
+                </div>
+                <div className=" flex flex-col gap-2">
+                    <label className="text-gray-400 font-semibold" htmlFor="">
+                        Your Phone Number<sup className="text-red-400">*</sup>
+                    </label>
+                    <input
+                        className="outline-none text-gray-300 bg-black border-gray-400 border rounded-md px-2 py-1"
+                        {...register("phone_number")}
+                        defaultValue={data?.phone_number || ""}
+                    />
+                    {errors?.phone_number ? (
+                        <p className="text-red-500">
+                            {String(errors?.phone_number?.message)}
                         </p>
                     ) : (
                         ""

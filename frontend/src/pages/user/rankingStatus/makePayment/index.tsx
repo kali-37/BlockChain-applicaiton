@@ -4,6 +4,7 @@ import { usePrepareTransaction } from "../../../../services/user/payment/use-pre
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { connectWallet } from "../../../../utils/authenticator";
+import { useSubmitSignedTransaction } from "../../../../services/user/payment/use-submit-signed-transaction";
 
 interface INextLevel {
     level_number: number;
@@ -44,8 +45,9 @@ function PaymentLayout({ nextLevelInfo, currentLevel }: CurrentAndNextLevel) {
 
 function MakePayment() {
     const { mutateAsync } = usePrepareTransaction();
+    const { mutateAsync: submitTransaction } = useSubmitSignedTransaction();
     const { currentLevel, nextLevelInfo } = useGetCurrentAndNextLevel();
-    const [account, setAccount] = useState<string | null>(null);
+    const [account, setAccount] = useState<string>("");
     const [processing, setProcessing] = useState<boolean>(false);
     const [error, setError] = useState<string | null>();
 
@@ -92,6 +94,15 @@ function MakePayment() {
                 ],
             });
             console.log("transaction detail==>", response);
+            console.log({
+                wallet_address: userWalletAddress,
+                signed_transaction: response,
+            });
+            const submitTransactionData = await submitTransaction({
+                wallet_address: userWalletAddress,
+                signed_transaction: response,
+            });
+            console.log(submitTransactionData);
         } catch (error) {
             console.log(error);
         }
