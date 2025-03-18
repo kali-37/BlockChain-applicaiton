@@ -5,7 +5,11 @@ import { useNavigate } from "react-router";
 
 interface IHandleTransactionData {
     wallet_address: string;
+<<<<<<< Updated upstream
     transaction_hash : string;
+=======
+    transaction_hash: string;
+>>>>>>> Stashed changes
 }
 
 async function sendTransactionResult(data: IHandleTransactionData) {

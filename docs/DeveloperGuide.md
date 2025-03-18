@@ -19,34 +19,37 @@ The system uses a secure wallet-based authentication flow:
 #### User Progression Flow
 
 1. **Level 0**: Initial account creation (via `/login/`)
-   - Profile created with referrer relationship
-   - Referral tree structure established
-   - No blockchain registration yet
+
+    - Profile created with referrer relationship
+    - Referral tree structure established
+    - No blockchain registration yet
 
 2. **Level 1**: On-chain registration (via `/register/`)
-   - Requires completed profile (username, country, phone)
-   - Two-phase transaction process
-   - 115 USDT fee (100 USDT to referrer, 15 USDT service fee)
+
+    - Requires completed profile (username, country, phone)
+    - Two-phase transaction process
+    - 115 USDT fee (100 USDT to referrer, 15 USDT service fee)
 
 3. **Level 2+**: Level upgrades (via `/upgrade/`)
-   - Requires meeting level-specific requirements
-   - Two-phase transaction process
-   - Fee increases by 50 USDT per level
+    - Requires meeting level-specific requirements
+    - Two-phase transaction process
+    - Fee increases by 50 USDT per level
 
 #### Two-Phase Transaction Model
 
 All blockchain interactions follow a two-phase transaction model:
 
 1. **Phase 1: Transaction Preparation**
-   - Request transaction data (unsigned)
-   - Backend validates eligibility and prepares transaction parameters
-   - No blockchain interaction or payment happens yet
+
+    - Request transaction data (unsigned)
+    - Backend validates eligibility and prepares transaction parameters
+    - No blockchain interaction or payment happens yet
 
 2. **Phase 2: Transaction Execution**
-   - Frontend gets the user to sign the transaction
-   - Signed transaction is submitted back to backend
-   - Backend broadcasts the transaction to the blockchain
-   - Transaction is executed and payment is processed
+    - Frontend gets the user to sign the transaction
+    - Signed transaction is submitted back to backend
+    - Backend broadcasts the transaction to the blockchain
+    - Transaction is executed and payment is processed
 
 ### API Endpoints
 
@@ -222,7 +225,7 @@ Content-Type: application/json
 
 {
   "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-  "signed_transaction": "0x..."
+  "transaction_hash": "0x..."
 }
 ```
 
@@ -281,7 +284,7 @@ Content-Type: application/json
 
 {
   "wallet_address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
-  "signed_transaction": "0x..."
+  "transaction_hash": "0x..."
 }
 ```
 
@@ -348,53 +351,58 @@ The system uses JWT (JSON Web Tokens) with wallet signatures:
 1. **User connects wallet**: Frontend shows wallet connect options
 2. **User authenticates**: Wallet signs nonce to prove ownership
 3. **Account creation**:
-   - `/login/` endpoint creates a Level 0 profile
-   - Referral relationships are established in database
+    - `/login/` endpoint creates a Level 0 profile
+    - Referral relationships are established in database
 4. **Profile completion**:
-   - User must provide username, country, phone
-   - This is required before registration on blockchain
+    - User must provide username, country, phone
+    - This is required before registration on blockchain
 
 #### Registration Implementation
 
 The registration process (Level 0 to Level 1) involves:
 
 1. **Profile validation**:
-   - Check profile is complete
-   - Confirm user has a referrer
-   - Ensure user isn't already registered
+
+    - Check profile is complete
+    - Confirm user has a referrer
+    - Ensure user isn't already registered
 
 2. **Blockchain transaction**:
-   - Two-phase process (prepare → sign → submit)
-   - 115 USDT payment (100 USDT to referrer, 15 USDT service fee)
-   - Smart contract updates the user's on-chain status
+
+    - Two-phase process (prepare → sign → submit)
+    - 115 USDT payment (100 USDT to referrer, 15 USDT service fee)
+    - Smart contract updates the user's on-chain status
 
 3. **Database updates**:
-   - User's level updated to 1
-   - is_registered_on_chain flag set to true
-   - Transaction record created
+    - User's level updated to 1
+    - is_registered_on_chain flag set to true
+    - Transaction record created
 
 #### Level Upgrade Implementation
 
 Level upgrades (Level 1 and beyond) involve:
 
 1. **Eligibility checks**:
-   - Level 2 requires 3 direct referrals
-   - Higher levels require referral depth matching level-1
-   - Profile must be complete
-   - Cannot skip levels
+
+    - Level 2 requires 3 direct referrals
+    - Higher levels require referral depth matching level-1
+    - Profile must be complete
+    - Cannot skip levels
 
 2. **Upline determination**:
-   - System automatically finds eligible upline at the right position
-   - If no eligible upline, reward goes to company wallet
+
+    - System automatically finds eligible upline at the right position
+    - If no eligible upline, reward goes to company wallet
 
 3. **Blockchain transaction**:
-   - Two-phase process (prepare → sign → submit)
-   - Fee increases by 50 USDT per level (150 for Level 2, 200 for Level 3, etc.)
-   - 20% of fee goes to company wallet, 80% to eligible upline
+
+    - Two-phase process (prepare → sign → submit)
+    - Fee increases by 50 USDT per level (150 for Level 2, 200 for Level 3, etc.)
+    - 20% of fee goes to company wallet, 80% to eligible upline
 
 4. **Database updates**:
-   - User's level updated
-   - Transaction records created
+    - User's level updated
+    - Transaction records created
 
 ### Error Handling
 
@@ -403,7 +411,7 @@ The API uses standard HTTP status codes and consistent error responses:
 ```json
 {
     "error": "Error message",
-    "details": {}  // Optional additional details
+    "details": {} // Optional additional details
 }
 ```
 
@@ -411,48 +419,52 @@ Common error scenarios:
 
 #### Registration Errors
 
-- **Profile Incomplete**:
-  ```json
-  {
-      "error": "Profile is incomplete",
-      "missing_fields": ["username", "country", "phone_number"]
-  }
-  ```
+-   **Profile Incomplete**:
 
-- **Already Registered**:
-  ```json
-  {
-      "error": "User is already registered on the blockchain"
-  }
-  ```
+    ```json
+    {
+        "error": "Profile is incomplete",
+        "missing_fields": ["username", "country", "phone_number"]
+    }
+    ```
+
+-   **Already Registered**:
+    ```json
+    {
+        "error": "User is already registered on the blockchain"
+    }
+    ```
 
 #### Upgrade Errors
 
-- **Insufficient Referrals**:
-  ```json
-  {
-      "error": "Need 3 direct referrals for Level 2"
-  }
-  ```
+-   **Insufficient Referrals**:
 
-- **Insufficient Depth**:
-  ```json
-  {
-      "error": "Insufficient referral depth, need depth of 4"
-  }
-  ```
+    ```json
+    {
+        "error": "Need 3 direct referrals for Level 2"
+    }
+    ```
+
+-   **Insufficient Depth**:
+    ```json
+    {
+        "error": "Insufficient referral depth, need depth of 4"
+    }
+    ```
 
 ### Security Considerations
 
 1. **Authentication Security**:
-   - Only wallet owners can authorize actions
-   - JWT tokens have limited timeframes
-   - Refresh tokens can be revoked if needed
+
+    - Only wallet owners can authorize actions
+    - JWT tokens have limited timeframes
+    - Refresh tokens can be revoked if needed
 
 2. **Authorization Control**:
-   - Users can only perform actions on their own wallet
-   - Each endpoint validates that the authorized user matches the requested wallet
+
+    - Users can only perform actions on their own wallet
+    - Each endpoint validates that the authorized user matches the requested wallet
 
 3. **Transaction Security**:
-   - Two-phase transaction model ensures user approval
-   - All
+    - Two-phase transaction model ensures user approval
+    - All

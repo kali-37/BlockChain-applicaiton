@@ -80,7 +80,7 @@ function MakePayment() {
                 return;
             }
 
-            const response = await window?.ethereum?.request({
+            const transaction_hash = await window?.ethereum?.request({
                 method: "eth_sendTransaction",
                 params: [
                     {
@@ -93,14 +93,18 @@ function MakePayment() {
                     },
                 ],
             });
-            console.log("transaction detail==>", response);
+            console.log("transaction detail==>", transaction_hash);
             console.log({
                 wallet_address: userWalletAddress,
-                signed_transaction: response,
+                signed_transaction: transaction_hash,
             });
             const submitTransactionData = await submitTransaction({
                 wallet_address: userWalletAddress,
+<<<<<<< Updated upstream
                 transaction_hash: response,
+=======
+                transaction_hash: transaction_hash,
+>>>>>>> Stashed changes
             });
             console.log(submitTransactionData);
         } catch (error) {
