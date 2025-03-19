@@ -15,6 +15,9 @@ from .serializers import (
 )
 from .services.blockchain import BlockchainService
 from .services.referral import ReferralService
+from django.utils.dateparse import parse_date
+from datetime import timedelta
+from django.db.models import Q
 
 
 class LoginView(viewsets.ViewSet):
@@ -165,11 +168,41 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def transactions(self, request, pk=None):
-        """Get transactions for a user"""
+        """Get transactions for a user with filters"""
         profile = self.get_object()
-        transactions = Transaction.objects.filter(user=profile)
-        return Response(TransactionSerializer(transactions, many=True).data)
-
+        
+        # Get the base queryset for the user
+        queryset = Transaction.objects.filter(user=profile).order_by("-created_at")
+        
+        # Filter by date range
+        start_date = self.request.query_params.get("start_date", None)
+        end_date = self.request.query_params.get("end_date", None)
+        
+        if start_date:
+            start_date = parse_date(start_date)
+            if start_date:
+                queryset = queryset.filter(created_at__date__gte=start_date)
+        
+        if end_date:
+            end_date = parse_date(end_date)
+            if end_date:
+                # Add one day to include the end date fully
+                end_date = end_date + timedelta(days=1)
+                queryset = queryset.filter(created_at__date__lt=end_date)
+        
+        # Filter by status
+        status = self.request.query_params.get("status", None)
+        if status:
+            queryset = queryset.filter(status=status)
+        
+        # Filter by transaction type
+        transaction_type = self.request.query_params.get("transaction_type", None)
+        if transaction_type:
+            queryset = queryset.filter(transaction_type=transaction_type)
+            
+        return Response(TransactionSerializer(queryset, many=True).data)
+    
+    
     @action(detail=True, methods=["get"])
     def uplines(self, request, pk=None):
         """Get all uplines for a user"""
@@ -221,16 +254,56 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Transaction.objects.all().order_by("-created_at")
     serializer_class = TransactionSerializer
 
+
     def get_queryset(self):
-        """Allow filtering by wallet address"""
+        """Allow filtering transactions by various parameters"""
         queryset = Transaction.objects.all().order_by("-created_at")
-        wallet_address = self.request.GET.get("wallet_address", None)
+        
+        # Filter by wallet address
+        wallet_address = self.request.query_params.get("wallet_address", None)
         if wallet_address:
             try:
                 profile = UserProfile.objects.get(wallet_address=wallet_address)
                 queryset = queryset.filter(user=profile)
             except UserProfile.DoesNotExist:
                 return Transaction.objects.none()
+        
+        # Filter by date range
+        start_date = self.request.query_params.get("start_date", None)
+        end_date = self.request.query_params.get("end_date", None)
+        
+        if start_date:
+            start_date = parse_date(start_date)
+            if start_date:
+                queryset = queryset.filter(created_at__date__gte=start_date)
+        
+        if end_date:
+            end_date = parse_date(end_date)
+            if end_date:
+                # Add one day to include the end date fully
+                end_date = end_date + timedelta(days=1)
+                queryset = queryset.filter(created_at__date__lt=end_date)
+        
+        # Filter by status
+        status = self.request.query_params.get("status", None)
+        if status:
+            queryset = queryset.filter(status=status)
+        
+        # Filter by transaction type
+        transaction_type = self.request.query_params.get("transaction_type", None)
+        if transaction_type:
+            queryset = queryset.filter(transaction_type=transaction_type)
+        
+        # Search functionality
+        search = self.request.query_params.get("search", None)
+        if search:
+            queryset = queryset.filter(
+                Q(transaction_hash__icontains=search) |
+                Q(user__username__icontains=search) |
+                Q(recipient__username__icontains=search) |
+                Q(amount__icontains=search)
+            )
+            
         return queryset
 
 
