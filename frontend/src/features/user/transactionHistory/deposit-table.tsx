@@ -15,8 +15,11 @@ function TransactionTable() {
         const fetchTransactions = async () => {
             setLoading(true);
             try {
-                const data = await transactionService.getTransactions();
+                const user_id = localStorage.getItem('user_id');
+                if (user_id){
+                const data = await transactionService.getTransactionById(Number(user_id));
                 setTransactions(data);
+                }
             } catch (error) {
                 console.error("Failed to fetch transactions:", error);
             } finally {

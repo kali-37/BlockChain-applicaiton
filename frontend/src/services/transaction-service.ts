@@ -25,7 +25,7 @@ export const useTransactionService = () => {
 
   const getTransactionById = async (id: number): Promise<Transaction | null> => {
     try {
-      const response = await api.get(`/api/transactions/${id}/`);
+      const response = await api.get(`/api/profiles/${id}/transactions/`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching transaction ${id}:`, error);
