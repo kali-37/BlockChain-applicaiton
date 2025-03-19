@@ -264,7 +264,9 @@ class RegistrationView(viewsets.ViewSet):
             # Check if user is already registered
             if profile.is_registered_on_chain or profile.current_level > 0:
                 return Response(
-                    {"error": f"User is already registered and already at level {profile.current_level}"},
+                    {
+                        "error": f"User is already registered and already at level {profile.current_level}"
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -294,7 +296,6 @@ class RegistrationView(viewsets.ViewSet):
             # Check the registration mode
             # If  tx_hahs is provided, process a completed registration
             if "transaction_hash" in request.data:
-                print("HERE we are in signed transaction", request.data)
 
                 try:
                     # Initialize blockchain service
@@ -304,7 +305,6 @@ class RegistrationView(viewsets.ViewSet):
                     tx_result = blockchain_service.verify_transaction(
                         request.data["transaction_hash"]
                     )
-                    print(tx_result)
 
                     if tx_result["status"] == "success":
                         # Just update the user's status - no need to modify relationships
@@ -323,6 +323,9 @@ class RegistrationView(viewsets.ViewSet):
                             transaction_hash=tx_result["transaction_hash"],
                             status="CONFIRMED",
                         )
+                        # here let's upgrade the direct reffer count of the upline reffer address
+                        referrer_profile.direct_referrals_count += 1
+                        referrer_profile.save()
 
                         return Response(
                             {
@@ -408,7 +411,7 @@ class UpgradeLevelView(viewsets.ViewSet):
             target_level = current_level + 1
 
             # Check if target_level is valid (max is 19)
-            if target_level > 19:
+            if target_level >= 19:
                 return Response(
                     {"error": "Already at maximum level"},
                     status=status.HTTP_400_BAD_REQUEST,

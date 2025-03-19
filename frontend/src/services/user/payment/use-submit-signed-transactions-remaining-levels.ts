@@ -9,7 +9,7 @@ interface IHandleTransactionData {
 }
 
 async function sendTransactionResult(data: IHandleTransactionData) {
-    const response = await api.post("/api/upgrade", data);
+    const response = await api.post("/api/upgrade/", data);
     console.log("remaining levels signed transaction == >", response);
     return response;
 }
