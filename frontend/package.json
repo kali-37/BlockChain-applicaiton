@@ -27,6 +27,7 @@
     "react-redux": "^9.2.0",
     "react-router": "^7.1.5",
     "react-router-dom": "^7.1.5",
+    "react-share": "^5.2.2",
     "react-spinners": "^0.15.0",
     "react-toastify": "^11.0.3",
     "web3": "^4.16.0",

@@ -4,7 +4,6 @@ import { useGetUserProfile } from "../../../services/user/use-get-user-profile";
 function ReferalDetails() {
     const { data: userProfile } = useGetUserProfile();
     console.log("userProfile ==> ", userProfile);
-    const url = import.meta.env.VITE_BASE;
 
     return (
         <div className="grid grid-cols-1 gap-4 py-4">
@@ -16,7 +15,7 @@ function ReferalDetails() {
             {userProfile?.current_level > 0 ? (
                 <div className="text-gray-400">
                     <span className="font-bold">Referral Link : </span>
-                    <span>{`${url}/?ref=${userProfile?.wallet_address}`}</span>
+                    <span>{`${window.location.origin}/?ref=${userProfile?.wallet_address}`}</span>
                 </div>
             ) : (
                 <>
