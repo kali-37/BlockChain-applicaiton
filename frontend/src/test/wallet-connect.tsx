@@ -23,16 +23,10 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
             // Connect to wallet
             const walletAddress = await connectWallet();
             setAccount(walletAddress);
-            console.log(walletAddress);
 
             // Check if we have a referrer from URL
             const params = new URLSearchParams(location.search);
             const referrer = params.get("ref");
-
-            console.log({
-                wallet_address: walletAddress,
-                referrer_wallet: referrer || undefined,
-            });
 
             // Create or fetch profile
             const loginResponse = await api.post("/api/login/", {
@@ -50,7 +44,11 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onClose }) => {
             setTimeout(() => {
                 onClose();
                 // Redirect based on user status
-                if (is_registered_on_chain && current_level > 0) {
+                if (
+                    is_registered_on_chain &&
+                    (current_level > 0 ||
+                        loginResponse?.data?.is_profile_complete)
+                ) {
                     navigate("/user/dashboard");
                 } else {
                     navigate("/user/profile");

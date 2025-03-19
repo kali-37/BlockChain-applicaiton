@@ -18,7 +18,6 @@ function handleDataInLocalStorage(data: IHandleResponse) {
 
 async function getUserPRofile() {
     const userWalletAddress = localStorage.getItem("walletAddress");
-    console.log(api.defaults.headers);
     const response = await api.get(
         `/api/profiles/by_wallet/?address=${userWalletAddress}`
     );

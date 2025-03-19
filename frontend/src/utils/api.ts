@@ -17,13 +17,13 @@ export const setAuthToken = (token: string): void => {
     console.log("setting api here ");
     if (token) {
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        localStorage.setItem("authToken", token);
+        localStorage.setItem("access_token", token);
     } else {
         // Remove token from headers if no token is provided
         delete api.defaults.headers.common["Authorization"];
 
         // Remove from localStorage as well
-        localStorage.removeItem("authToken");
+        localStorage.removeItem("access_token");
     }
 };
 
@@ -38,20 +38,23 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        console.log(error?.response.data.detail);
+        console.log("api response ", error);
         if (
-            error.response?.status === 401 &&
-            error.response?.data.detail == "Invalid or expired token" &&
+            (error.response?.status === 401 ||
+                error.response?.data.detail == "Invalid or expired token") &&
             !originalRequest._retry
         ) {
             originalRequest._retry = true;
+            try {
+                // Try to refresh the token
+                const refreshed = await refreshAccessToken();
 
-            // Try to refresh the token
-            const refreshed = await refreshAccessToken();
-
-            if (refreshed) {
-                // Retry the original request with new token
-                return api(originalRequest);
+                if (refreshed) {
+                    // Retry the original request with new token
+                    return api(originalRequest);
+                }
+            } catch (err) {
+                console.error("Token refresh failed : ", err);
             }
         }
 

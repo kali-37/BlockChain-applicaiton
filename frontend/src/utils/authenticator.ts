@@ -78,13 +78,12 @@ export const authenticateWithWallet = async (
                 nonce,
             }
         );
-        console.log(authResponse);
+        // console.log(authResponse);
 
         // Store tokens
         const { access_token, refresh_token, access_expires_at } =
             authResponse.data;
         localStorage.setItem("access_token", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
         localStorage.setItem("refresh_token", refresh_token);
         localStorage.setItem("access_expires_at", access_expires_at);
 
@@ -105,12 +104,17 @@ export const refreshAccessToken = async (): Promise<boolean> => {
     if (!refresh_token) {
         return false;
     }
+    // console.log(refresh_token);
 
     try {
+        // removing expired access_token from the header , so it will not block us .
+        delete api.defaults.headers.common["Authorization"];
+
         const response = await api.post("/api/auth/refresh/", {
-            refresh_token,
+            refresh_token: refresh_token,
         });
 
+        // console.log(response);
         localStorage.setItem("access_token", response.data.access_token);
         setAuthToken(response.data.access_token);
 
@@ -132,6 +136,11 @@ export const logout = (): void => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("walletAddress");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("is_profile_complete");
+    localStorage.removeItem("current_level");
+    localStorage.removeItem("access_expires_at");
+    localStorage.removeItem("authToken");
     removeAuthTokens();
 };
 
