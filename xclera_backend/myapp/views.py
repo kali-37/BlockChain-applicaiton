@@ -14,7 +14,7 @@ from .serializers import (
     ProfileUpdateSerializer,
 )
 from .services.blockchain import BlockchainService
-from .services.referral import ReferralService
+from .services.referral import ReferralService,get_company_wallet_profile
 from django.utils.dateparse import parse_date
 from datetime import timedelta
 from django.db.models import Q
@@ -378,25 +378,51 @@ class RegistrationView(viewsets.ViewSet):
                     tx_result = blockchain_service.verify_transaction(
                         request.data["transaction_hash"]
                     )
-
                     if tx_result["status"] == "success":
-                        # Just update the user's status - no need to modify relationships
-                        # Relationships should have been created during Level 0 account creation
+                        # Update the user's status
                         profile.is_registered_on_chain = True
                         profile.current_level = 1
                         profile.save()
 
-                        # Create transaction record
-                        Transaction.objects.create(
+                        # Constants for registration fees
+                        level_fee = 100  # 100 USDT to referrer
+                        service_fee = 15  # 15 USDT service fee
+                        total_fee = level_fee + service_fee  # 115 USDT total
+
+                        # Create main registration transaction record
+                        registration_tx = Transaction.objects.create(
                             user=profile,
                             transaction_type="REGISTRATION",
-                            amount=115,  # 100 USDT level fee + 15 USDT service fee
+                            amount=total_fee,  # 115 USDT total
                             level=1,
-                            recipient=referrer_profile,
+                            # No recipient for the registration transaction itself
                             transaction_hash=tx_result["transaction_hash"],
                             status="CONFIRMED",
                         )
-                        # here let's upgrade the direct reffer count of the upline reffer address
+
+                        # Create reward transaction for referrer (100 USDT)
+                        referrer_tx = Transaction.objects.create(
+                            user=referrer_profile,  # Referrer receives the reward
+                            transaction_type="REWARD",
+                            amount=level_fee,  # 100 USDT
+                            level=1,
+                            recipient=profile,  # New user is the source of reward
+                            transaction_hash=tx_result["transaction_hash"],
+                            status="CONFIRMED",
+                        )
+
+                        company_wallet_profile =get_company_wallet_profile()
+                        company_tx = Transaction.objects.create(
+                            user=company_wallet_profile,  # Company wallet receives the fee
+                            transaction_type="REWARD",
+                            amount=service_fee,  # 15 USDT service fee
+                            level=1,
+                            recipient=profile,  # New user is the source of fee
+                            transaction_hash=tx_result["transaction_hash"],
+                            status="CONFIRMED",
+                        )
+
+                        # Update referrer's direct referral count
                         referrer_profile.direct_referrals_count += 1
                         referrer_profile.save()
 
