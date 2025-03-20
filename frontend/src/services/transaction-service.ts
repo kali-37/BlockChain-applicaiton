@@ -1,9 +1,12 @@
+// frontend/src/services/transaction-service.ts
 import { api } from "../utils/api";
 
 export interface Transaction {
   id: number;
   transaction_type: "REGISTRATION" | "UPGRADE" | "REWARD";
   amount: number;
+  display_amount: string; // New field with +/- prefix
+  transaction_direction: "incoming" | "outgoing" | "unknown"; // New field for direction
   level?: number;
   status: "PENDING" | "CONFIRMED" | "FAILED";
   transaction_hash?: string;

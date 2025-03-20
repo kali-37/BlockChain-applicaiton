@@ -131,6 +131,15 @@ function TransactionTable() {
                 return type;
         }
     };
+    
+    const getAmountColor = (displayAmount: string) => {
+        if (displayAmount.startsWith('+')) {
+            return "text-green-500"; // Incoming funds (green)
+        } else if (displayAmount.startsWith('-')) {
+            return "text-red-500";   // Outgoing funds (red)
+        }
+        return "";  // Default color
+    };
 
     return (
         <div className="space-y-4">
@@ -258,7 +267,9 @@ function TransactionTable() {
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-400">Amount:</span>
-                            <span>{selectedTransaction.amount} USDT</span>
+                            <span className={getAmountColor(selectedTransaction.display_amount)}>
+                                {selectedTransaction.display_amount} USDT
+                            </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-400">Date:</span>
@@ -284,9 +295,11 @@ function TransactionTable() {
                                 </span>
                             </div>
                         )}
-                        {selectedTransaction.recipient_username && (
+                        {/* For outgoing transactions (REGISTRATION/UPGRADE), no recipient to show */}
+                        {/* For incoming transactions (REWARD), show who the reward came from */}
+                        {selectedTransaction.transaction_type === "REWARD" && selectedTransaction.recipient_username && (
                             <div className="flex justify-between">
-                                <span className="text-gray-400">Recipient:</span>
+                                <span className="text-gray-400">From User:</span>
                                 <span>{selectedTransaction.recipient_username}</span>
                             </div>
                         )}
@@ -323,8 +336,8 @@ function TransactionTable() {
                                         <td className="text-center w-1/4">
                                             {getTransactionTypeDisplay(tx.transaction_type)}
                                         </td>
-                                        <td className="text-right w-1/4">
-                                            {tx.amount}
+                                        <td className={`text-right w-1/4 ${getAmountColor(tx.display_amount)}`}>
+                                            {tx.display_amount}
                                         </td>
                                         <td className={`text-right w-1/4 ${getStatusColor(tx.status)}`}>
                                             {tx.status}
