@@ -14,10 +14,11 @@ from .serializers import (
     ProfileUpdateSerializer,
 )
 from .services.blockchain import BlockchainService
-from .services.referral import ReferralService,get_company_wallet_profile
+from .services.referral import ReferralService, get_company_wallet_profile
 from django.utils.dateparse import parse_date
-from datetime import timedelta,datetime
-from django.db.models import Q
+from datetime import timedelta, datetime
+from django.utils import timezone
+from django.db.models import Q,Sum
 
 
 class LoginView(viewsets.ViewSet):
@@ -170,9 +171,11 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def transactions(self, request, pk=None):
         """Get transactions for a user with filtering support"""
         profile = self.get_object()
-        queryset = Transaction.objects.filter(
-            Q(user=profile) |Q(recipient=profile)
-        ).order_by("-created_at")
+        
+        # Only get transactions where the current user is the primary user (not as recipient)
+        # For a complete financial picture, we only need the transactions where the user
+        # is the main actor (paying or receiving)
+        queryset = Transaction.objects.filter(user=profile).order_by("-created_at")
         
         # Apply filters
         transaction_type = request.query_params.get("transaction_type", None)
@@ -203,19 +206,72 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         level = request.query_params.get("level", None)
         if level:
             queryset = queryset.filter(level=level)
-            
-        # Add a parameter to filter only transactions where user is the recipient
-        is_recipient = request.query_params.get("is_recipient", None)
-        if is_recipient and is_recipient.lower() == "true":
-            queryset = queryset.filter(recipient=profile)
-            
-        # Add a parameter to filter only transactions where user is the sender
-        is_sender = request.query_params.get("is_sender", None)
-        if is_sender and is_sender.lower() == "true":
-            queryset = queryset.filter(user=profile)
-        
-        return Response(TransactionSerializer(queryset, many=True).data)
-    
+                
+        # Important: Pass the request in the context so the serializer can determine the transaction direction
+        serializer = TransactionSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def dashboard_stats(self, request, pk=None):
+        """Get dashboard statistics for a user"""
+        profile = self.get_object()
+
+        # Get time periods for filtering
+        now = timezone.now()
+        last_24_hours = now - timedelta(hours=24)
+        last_7_days = now - timedelta(days=7)
+        last_10_days = now - timedelta(days=10)
+
+        # Get time period from request params (default to 24h)
+        time_period = request.query_params.get("period", "24h")
+
+        if time_period == "7d":
+            period_start = last_7_days
+        elif time_period == "10d":
+            period_start = last_10_days
+        else:  # Default to 24h
+            period_start = last_24_hours
+
+        # Get new team members (direct referrals) in the selected period
+        new_members = UserProfile.objects.filter(
+            referrer=profile, date_registered__gte=period_start
+        ).count()
+
+        # Calculate total team size - get unique users in downline
+        # Using distinct() to avoid counting the same user multiple times
+        team_size = UserProfile.objects.filter(
+            uplines__upline=profile
+        ).distinct().count()
+
+        # Verify with profile's direct_referrals_count - this should match or be investigated
+        direct_referrals = profile.direct_referrals_count
+
+        # Calculate accumulated earnings (rewards received)
+        earnings = (
+            Transaction.objects.filter(
+                user=profile, transaction_type="REWARD"
+            ).aggregate(total=Sum("amount"))["total"]
+            or 0
+        )
+
+        # Calculate earnings in the selected period
+        period_earnings = (
+            Transaction.objects.filter(
+                user=profile, transaction_type="REWARD", created_at__gte=period_start
+            ).aggregate(total=Sum("amount"))["total"]
+            or 0
+        )
+
+        return Response(
+            {
+                "new_members": new_members,
+                "team_size": team_size,
+                "direct_referrals": direct_referrals,  # Add this for debugging/verification
+                "total_earnings": float(earnings),
+                "period_earnings": float(period_earnings),
+                "time_period": time_period,
+            }
+        )
     @action(detail=True, methods=["get"])
     def uplines(self, request, pk=None):
         """Get all uplines for a user"""
@@ -270,7 +326,7 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """Allow filtering by various parameters"""
         queryset = Transaction.objects.all().order_by("-created_at")
-        
+
         # Filter by wallet address if provided
         wallet_address = self.request.query_params.get("wallet_address", None)
         if wallet_address:
@@ -279,38 +335,42 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
                 queryset = queryset.filter(user=profile)
             except UserProfile.DoesNotExist:
                 return Transaction.objects.none()
-        
+
         # Filter by transaction type
         transaction_type = self.request.query_params.get("transaction_type", None)
         if transaction_type:
             queryset = queryset.filter(transaction_type=transaction_type)
-        
+
         # Filter by status
         status = self.request.query_params.get("status", None)
         if status:
             queryset = queryset.filter(status=status)
-        
+
         # Filter by date range
         from_date = self.request.query_params.get("from_date", None)
         to_date = self.request.query_params.get("to_date", None)
-        
+
         if from_date:
             # Convert string to datetime (assumes YYYY-MM-DD format)
-            from_datetime = datetime.strptime(from_date, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+            from_datetime = datetime.strptime(from_date, "%Y-%m-%d").replace(
+                tzinfo=timezone.utc
+            )
             queryset = queryset.filter(created_at__gte=from_datetime)
-        
+
         if to_date:
             # Convert string to datetime and set to end of day
-            to_datetime = datetime.strptime(to_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+            to_datetime = datetime.strptime(to_date, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59, tzinfo=timezone.utc
+            )
             queryset = queryset.filter(created_at__lte=to_datetime)
-        
+
         # Filter by level
         level = self.request.query_params.get("level", None)
         if level:
             queryset = queryset.filter(level=level)
-        
+
         return queryset
-        
+
 
 class RegistrationView(viewsets.ViewSet):
     """API endpoint for registering new users (upgrading from Level 0 to Level 1)"""
@@ -416,7 +476,7 @@ class RegistrationView(viewsets.ViewSet):
                             status="CONFIRMED",
                         )
 
-                        company_wallet_profile =get_company_wallet_profile()
+                        company_wallet_profile = get_company_wallet_profile()
                         company_tx = Transaction.objects.create(
                             user=company_wallet_profile,  # Company wallet receives the fee
                             transaction_type="REWARD",

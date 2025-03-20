@@ -117,9 +117,13 @@ class LevelSerializer(serializers.ModelSerializer):
         fields = ["level_number", "price", "min_direct_referrals", "min_referral_depth", "rank_fee"]
 
 
+# Update the TransactionSerializer in myapp/serializers.py
+
 class TransactionSerializer(serializers.ModelSerializer):
     user_username = serializers.SerializerMethodField()
     recipient_username = serializers.SerializerMethodField()
+    transaction_direction = serializers.SerializerMethodField()
+    display_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Transaction
@@ -129,6 +133,8 @@ class TransactionSerializer(serializers.ModelSerializer):
             "user_username",
             "transaction_type",
             "amount",
+            "display_amount",  # New field for display with +/- sign
+            "transaction_direction",  # New field for inflow/outflow
             "level",
             "recipient",
             "recipient_username",
@@ -146,7 +152,28 @@ class TransactionSerializer(serializers.ModelSerializer):
         if obj.recipient:
             return obj.recipient.username or obj.recipient.wallet_address[:10] + "..."
         return None
-
+        
+    def get_transaction_direction(self, obj):
+        
+        if obj.transaction_type in ["REGISTRATION", "UPGRADE"]:
+            return "outgoing"
+        elif obj.transaction_type == "REWARD":
+            return "incoming"
+        
+        return "unknown"  # Fallback
+        
+    def get_display_amount(self, obj):
+        """
+        Format amount with + or - sign based on transaction direction
+        """
+        direction = self.get_transaction_direction(obj)
+        
+        if direction == "incoming":
+            return f"+{obj.amount}"
+        elif direction == "outgoing":
+            return f"-{obj.amount}"
+        else:
+            return f"{obj.amount}"
 
 class ReferralRelationshipSerializer(serializers.ModelSerializer):
     user_username = serializers.SerializerMethodField()
