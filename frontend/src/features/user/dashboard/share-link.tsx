@@ -13,7 +13,7 @@ import {
 
 function ShareLink() {
     console.log("inside share link");
-    const referalLink = `${window.location.origin}/?ref${localStorage.getItem(
+    const referalLink = `${window.location.origin}/?ref=${localStorage.getItem(
         "walletAddress"
     )}`;
 
