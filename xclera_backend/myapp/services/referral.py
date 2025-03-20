@@ -173,84 +173,84 @@ class ReferralService:
         return None
 
 
-@staticmethod
-@transaction.atomic
-def upgrade_user_level(profile, target_level, transaction_hash=None):
-    """
-    Upgrade a user to a new level and record the transaction
-    """
-    # Get level info
-    level_info = Level.objects.get(level_number=target_level)
+    @staticmethod
+    @transaction.atomic
+    def upgrade_user_level(profile, target_level, transaction_hash=None):
+        """
+        Upgrade a user to a new level and record the transaction
+        """
+        # Get level info
+        level_info = Level.objects.get(level_number=target_level)
 
-    # Find eligible upline
-    eligible_upline = ReferralService.find_eligible_upline(profile, target_level)
+        # Find eligible upline
+        eligible_upline = ReferralService.find_eligible_upline(profile, target_level)
 
-    # Calculate fees
-    company_fee_percentage = 20
-    company_fee = (level_info.price * company_fee_percentage) / 100
-    upline_reward = level_info.price - company_fee
+        # Calculate fees
+        company_fee_percentage = 20
+        company_fee = (level_info.price * company_fee_percentage) / 100
+        upline_reward = level_info.price - company_fee
 
-    # Record upgrade transaction
-    upgrade_tx = Transaction.objects.create(
-        user=profile,
-        transaction_type="UPGRADE",
-        amount=level_info.price,
-        level=target_level,
-        # No recipient for upgrade transactions
-        transaction_hash=transaction_hash,
-        status="CONFIRMED" if transaction_hash else "PENDING",
-    )
-
-    company_wallet_profile = get_company_wallet_profile()
-    # Record company fee transaction (20%)
-    company_tx = Transaction.objects.create(
-        user=company_wallet_profile,  # User receiving the fee
-        transaction_type="REWARD",
-        amount=company_fee,
-        level=target_level,
-        recipient=profile,  # User who paid the fee
-        transaction_hash=transaction_hash,
-        status="CONFIRMED" if transaction_hash else "PENDING",
-    )
-
-    # Record reward transaction for the remaining 80%
-    if eligible_upline:
-        # If there's an eligible upline, they get the reward
-        reward_tx = Transaction.objects.create(
-            user=eligible_upline,  # User receiving the reward
-            transaction_type="REWARD",
-            amount=upline_reward,
+        # Record upgrade transaction
+        upgrade_tx = Transaction.objects.create(
+            user=profile,
+            transaction_type="UPGRADE",
+            amount=level_info.price,
             level=target_level,
-            recipient=profile,  # User who triggered the reward
+            # No recipient for upgrade transactions
             transaction_hash=transaction_hash,
             status="CONFIRMED" if transaction_hash else "PENDING",
         )
-        rewarded_user = eligible_upline
-    else:
-        # If no eligible upline, company wallet gets the reward
-        reward_tx = Transaction.objects.create(
-            user=company_wallet_profile,
+
+        company_wallet_profile = get_company_wallet_profile()
+        # Record company fee transaction (20%)
+        company_tx = Transaction.objects.create(
+            user=company_wallet_profile,  # User receiving the fee
             transaction_type="REWARD",
-            amount=upline_reward,
+            amount=company_fee,
             level=target_level,
-            recipient=profile,
+            recipient=profile,  # User who paid the fee
             transaction_hash=transaction_hash,
             status="CONFIRMED" if transaction_hash else "PENDING",
         )
-        rewarded_user = company_wallet_profile
 
-    # Update user level
-    profile.current_level = target_level
-    profile.save(update_fields=["current_level"])
+        # Record reward transaction for the remaining 80%
+        if eligible_upline:
+            # If there's an eligible upline, they get the reward
+            reward_tx = Transaction.objects.create(
+                user=eligible_upline,  # User receiving the reward
+                transaction_type="REWARD",
+                amount=upline_reward,
+                level=target_level,
+                recipient=profile,  # User who triggered the reward
+                transaction_hash=transaction_hash,
+                status="CONFIRMED" if transaction_hash else "PENDING",
+            )
+            rewarded_user = eligible_upline
+        else:
+            # If no eligible upline, company wallet gets the reward
+            reward_tx = Transaction.objects.create(
+                user=company_wallet_profile,
+                transaction_type="REWARD",
+                amount=upline_reward,
+                level=target_level,
+                recipient=profile,
+                transaction_hash=transaction_hash,
+                status="CONFIRMED" if transaction_hash else "PENDING",
+            )
+            rewarded_user = company_wallet_profile
 
-    return {
-        "success": True,
-        "new_level": target_level,
-        "upline_rewarded": (
-            rewarded_user.username
-            if rewarded_user and rewarded_user.username
-            else rewarded_user.wallet_address[:10] + "..." if rewarded_user else None
-        ),
-        "upline_reward": upline_reward,
-        "company_fee": company_fee,
-    }
+        # Update user level
+        profile.current_level = target_level
+        profile.save(update_fields=["current_level"])
+
+        return {
+            "success": True,
+            "new_level": target_level,
+            "upline_rewarded": (
+                rewarded_user.username
+                if rewarded_user and rewarded_user.username
+                else rewarded_user.wallet_address[:10] + "..." if rewarded_user else None
+            ),
+            "upline_reward": upline_reward,
+            "company_fee": company_fee,
+        }
