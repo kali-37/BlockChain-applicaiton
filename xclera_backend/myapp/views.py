@@ -16,7 +16,7 @@ from .serializers import (
 from .services.blockchain import BlockchainService
 from .services.referral import ReferralService,get_company_wallet_profile
 from django.utils.dateparse import parse_date
-from datetime import timedelta
+from datetime import timedelta,datetime
 from django.db.models import Q
 
 
@@ -168,40 +168,53 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def transactions(self, request, pk=None):
-        """Get transactions for a user with filters"""
+        """Get transactions for a user with filtering support"""
         profile = self.get_object()
+        queryset = Transaction.objects.filter(
+            Q(user=profile) |Q(recipient=profile)
+        ).order_by("-created_at")
         
-        # Get the base queryset for the user
-        queryset = Transaction.objects.filter(user=profile).order_by("-created_at")
+        # Apply filters
+        transaction_type = request.query_params.get("transaction_type", None)
+        if transaction_type:
+            queryset = queryset.filter(transaction_type=transaction_type)
         
-        # Filter by date range
-        start_date = self.request.query_params.get("start_date", None)
-        end_date = self.request.query_params.get("end_date", None)
-        
-        if start_date:
-            start_date = parse_date(start_date)
-            if start_date:
-                queryset = queryset.filter(created_at__date__gte=start_date)
-        
-        if end_date:
-            end_date = parse_date(end_date)
-            if end_date:
-                # Add one day to include the end date fully
-                end_date = end_date + timedelta(days=1)
-                queryset = queryset.filter(created_at__date__lt=end_date)
-        
-        # Filter by status
-        status = self.request.query_params.get("status", None)
+        status = request.query_params.get("status", None)
         if status:
             queryset = queryset.filter(status=status)
         
-        # Filter by transaction type
-        transaction_type = self.request.query_params.get("transaction_type", None)
-        if transaction_type:
-            queryset = queryset.filter(transaction_type=transaction_type)
+        from_date = request.query_params.get("from_date", None)
+        to_date = request.query_params.get("to_date", None)
+        
+        if from_date:
+            try:
+                from_datetime = datetime.strptime(from_date, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+                queryset = queryset.filter(created_at__gte=from_datetime)
+            except ValueError:
+                pass  # Invalid date format, ignore filter
+        
+        if to_date:
+            try:
+                to_datetime = datetime.strptime(to_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+                queryset = queryset.filter(created_at__lte=to_datetime)
+            except ValueError:
+                pass  # Invalid date format, ignore filter
+        
+        level = request.query_params.get("level", None)
+        if level:
+            queryset = queryset.filter(level=level)
             
+        # Add a parameter to filter only transactions where user is the recipient
+        is_recipient = request.query_params.get("is_recipient", None)
+        if is_recipient and is_recipient.lower() == "true":
+            queryset = queryset.filter(recipient=profile)
+            
+        # Add a parameter to filter only transactions where user is the sender
+        is_sender = request.query_params.get("is_sender", None)
+        if is_sender and is_sender.lower() == "true":
+            queryset = queryset.filter(user=profile)
+        
         return Response(TransactionSerializer(queryset, many=True).data)
-    
     
     @action(detail=True, methods=["get"])
     def uplines(self, request, pk=None):
@@ -249,17 +262,16 @@ class LevelViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for viewing transactions"""
+    """API endpoint for viewing transactions with filtering"""
 
     queryset = Transaction.objects.all().order_by("-created_at")
     serializer_class = TransactionSerializer
 
-
     def get_queryset(self):
-        """Allow filtering transactions by various parameters"""
+        """Allow filtering by various parameters"""
         queryset = Transaction.objects.all().order_by("-created_at")
         
-        # Filter by wallet address
+        # Filter by wallet address if provided
         wallet_address = self.request.query_params.get("wallet_address", None)
         if wallet_address:
             try:
@@ -268,44 +280,37 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
             except UserProfile.DoesNotExist:
                 return Transaction.objects.none()
         
-        # Filter by date range
-        start_date = self.request.query_params.get("start_date", None)
-        end_date = self.request.query_params.get("end_date", None)
-        
-        if start_date:
-            start_date = parse_date(start_date)
-            if start_date:
-                queryset = queryset.filter(created_at__date__gte=start_date)
-        
-        if end_date:
-            end_date = parse_date(end_date)
-            if end_date:
-                # Add one day to include the end date fully
-                end_date = end_date + timedelta(days=1)
-                queryset = queryset.filter(created_at__date__lt=end_date)
+        # Filter by transaction type
+        transaction_type = self.request.query_params.get("transaction_type", None)
+        if transaction_type:
+            queryset = queryset.filter(transaction_type=transaction_type)
         
         # Filter by status
         status = self.request.query_params.get("status", None)
         if status:
             queryset = queryset.filter(status=status)
         
-        # Filter by transaction type
-        transaction_type = self.request.query_params.get("transaction_type", None)
-        if transaction_type:
-            queryset = queryset.filter(transaction_type=transaction_type)
+        # Filter by date range
+        from_date = self.request.query_params.get("from_date", None)
+        to_date = self.request.query_params.get("to_date", None)
         
-        # Search functionality
-        search = self.request.query_params.get("search", None)
-        if search:
-            queryset = queryset.filter(
-                Q(transaction_hash__icontains=search) |
-                Q(user__username__icontains=search) |
-                Q(recipient__username__icontains=search) |
-                Q(amount__icontains=search)
-            )
-            
+        if from_date:
+            # Convert string to datetime (assumes YYYY-MM-DD format)
+            from_datetime = datetime.strptime(from_date, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+            queryset = queryset.filter(created_at__gte=from_datetime)
+        
+        if to_date:
+            # Convert string to datetime and set to end of day
+            to_datetime = datetime.strptime(to_date, '%Y-%m-%d').replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+            queryset = queryset.filter(created_at__lte=to_datetime)
+        
+        # Filter by level
+        level = self.request.query_params.get("level", None)
+        if level:
+            queryset = queryset.filter(level=level)
+        
         return queryset
-
+        
 
 class RegistrationView(viewsets.ViewSet):
     """API endpoint for registering new users (upgrading from Level 0 to Level 1)"""
