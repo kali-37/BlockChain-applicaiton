@@ -1,6 +1,7 @@
 .env
 *.back
 .venv
+*.zip
 
 # Python
 __pycache__/

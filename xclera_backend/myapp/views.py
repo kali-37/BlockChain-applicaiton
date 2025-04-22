@@ -118,8 +118,6 @@ class LoginView(viewsets.ViewSet):
                         current_upline = current_upline.referrer
                         level += 1
 
-                    # Update max_referral_depth for each upline
-                    ReferralService.update_referral_depths(profile)
 
                 return Response(
                     {
@@ -490,6 +488,9 @@ class RegistrationView(viewsets.ViewSet):
                         # Update referrer's direct referral count
                         referrer_profile.direct_referrals_count += 1
                         referrer_profile.save()
+
+                        # Update max_referral_depth for each upline
+                        ReferralService.update_referral_depths(profile)
 
                         return Response(
                             {

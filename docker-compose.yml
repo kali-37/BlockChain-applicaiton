@@ -1,0 +1,46 @@
+ersion: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-xclera}
+      MYSQL_USER: ${DB_USER:-xclera_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    volumes:
+      - .:/app
+      - static_volume:/app/xclera_backend/staticfiles
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=${DB_NAME:-xclera}
+      - DB_USER=${DB_USER:-xclera_user}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_HOST=db
+      - DEBUG=${DEBUG:-True}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - WEB3_PROVIDER_URL=${WEB3_PROVIDER_URL:-http://127.0.0.1:8545}
+      - CHAIN_ID=${CHAIN_ID:-31337}
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - ROOT_USER_ADDRESS=${ROOT_USER_ADDRESS}
+      - COMPANY_WALLET_ADDRESS=${COMPANY_WALLET_ADDRESS}
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:
+  static_volume:

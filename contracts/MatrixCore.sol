@@ -107,6 +107,9 @@ contract SimplifiedMatrixCore is Ownable, ReentrancyGuard {
         // Update user level
         users[msg.sender].currentLevel = _level;
 
+        if (msg.value > upgradeFee) {
+            payable(msg.sender).transfer(msg.value - upgradeFee);
+            }
         // Send the upline amount
         if (_uplineAddress != address(0)) {
             require(users[_uplineAddress].isRegistered, "Invalid upline address");

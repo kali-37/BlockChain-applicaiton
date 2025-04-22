@@ -155,23 +155,20 @@ class ReferralService:
         if target_level == 1:
             return None
 
-        # Try to find an upline at the appropriate level with sufficient level
-        try:
-            relationship = ReferralRelationship.objects.get(
-                user=profile,
-                level=target_level - 1,  # Level depth matches the target level
-            )
-
+        # Try to find eligible uplines at the appropriate level
+        relationships = ReferralRelationship.objects.filter(
+            user=profile,
+            level=target_level - 1,  # Level depth matches the target level
+        )
+        
+        # Check each potential upline for eligibility
+        for relationship in relationships:
             upline = relationship.upline
             if upline.current_level >= target_level:
                 return upline
 
-        except ReferralRelationship.DoesNotExist:
-            pass
-
         # If no eligible upline found, return None (company wallet will be used)
         return None
-
 
     @staticmethod
     @transaction.atomic
